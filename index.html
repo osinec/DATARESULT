@@ -225,7 +225,7 @@
         <header>
             <h1>📖 Скорочтение</h1>
             <p class="subtitle">
-                Выделение бежит по фразам. Зелёный — медленно, оранжевый — быстро.
+                Каждой фразе выделяется время на чтение. Зелёный — медленно, оранжевый — быстро.
             </p>
         </header>
 
@@ -248,19 +248,31 @@
     </div>
 
     <script>
-        // ⚙️ Настройки скорости
-        const SLOW_WPM = 120;
-        const FAST_WPM = 300;
+        // ╔════════════════════════════════════════════════╗
+        // ║           ⚙️ НАСТРОЙКИ — МОЖНО МЕНЯТЬ          ║
+        // ╚════════════════════════════════════════════════╝
 
-        // Разделители фраз
+        // 🔧 Скорость чтения (в словах в минуту)
+        const SLOW_WPM = 120;   // Медленное чтение
+        const FAST_WPM = 300;   // Быстрое чтение
+
+        // 🔧 Запас времени (в секундах) — добавляется к каждой фразе
+        // Полезно, чтобы пользователь успевал "переварить" фразу
+        const EXTRA_TIME_SECONDS = 0.3;
+
+        // 🔧 Разделители фраз (можно добавить свои)
         const phraseDelimiters = /[,.!?;:]/;
 
+        // 🔧 Путь к файлу с упражнениями
         const EXERCISES_JSON = 'exercises.json';
 
-        let phrases = [];         // Массив фраз: { text, isSlow }
+        // ╔════════════════════════════════════════════════╗
+        // ║         КОНЕЦ НАСТРОЕК — ДАЛЬШЕ НЕ МЕНЯЙ       ║
+        // ╚════════════════════════════════════════════════╝
+
+        let phrases = [];           // [{ text, isSlow, duration }]
         let currentPhraseIndex = 0;
         let intervalId = null;
-        let isSlowMode = true;
 
         // Загрузка упражнения
         async function loadExercise() {
@@ -275,7 +287,7 @@
                 }
 
                 const exercise = exercises[Math.floor(Math.random() * exercises.length)];
-                splitIntoPhrases(exercise.text);
+                splitIntoPhrasesWithTiming(exercise.text);
                 renderText(exercise.title);
                 status.textContent = `Упражнение: "${exercise.title}"`;
             } catch (err) {
@@ -285,29 +297,31 @@
             }
         }
 
-        // Разбиваем текст на фразы по знакам препинания
-        function splitIntoPhrases(text) {
+        // Разбиваем текст на фразы и рассчитываем время на каждую
+        function splitIntoPhrasesWithTiming(text) {
             phrases = [];
-            let parts = text.split(phraseDelimiters);
-            let delimiters = text.match(phraseDelimiters) || [];
+            const parts = text.split(phraseDelimiters);
+            const delimiters = text.match(phraseDelimiters) || [];
 
-            let startIndex = 0;
             for (let i = 0; i < parts.length; i++) {
                 let part = parts[i].trim();
                 if (part.length === 0) continue;
 
-                // Добавляем знак препинания, если есть
-                let fullText = part;
-                if (i < delimiters.length) {
-                    fullText += delimiters[i];
-                }
+                const fullText = part + (i < delimiters.length ? delimiters[i] : '');
+                const wordCount = part.trim().split(/\s+/).length;
+                const isSlow = i % 2 === 0; // Чередование: медленно → быстро
 
-                // Чередуем режимы: медленно → быстро → медленно...
-                const isSlow = i % 2 === 0; // Чётные — медленно, нечётные — быстро
+                // ⏱️ Рассчитываем время в миллисекундах
+                const wpm = isSlow ? SLOW_WPM : FAST_WPM;
+                const minutes = wordCount / wpm;                     // Время на слова
+                const seconds = minutes * 60 + EXTRA_TIME_SECONDS;   // Добавляем запас
+                const duration = seconds * 1000;                     // В миллисекунды
 
                 phrases.push({
                     text: fullText,
-                    isSlow: isSlow
+                    isSlow: isSlow,
+                    duration: duration,
+                    wordCount: wordCount
                 });
             }
         }
@@ -334,8 +348,8 @@
 
         // Обновление отображения режима
         function updateDisplay() {
-            const modeText = isSlowMode ? 'Медленно' : 'Быстро';
-            const speedValue = isSlowMode ? SLOW_WPM : FAST_WPM;
+            const modeText = phrases[currentPhraseIndex]?.isSlow ? 'Медленно' : 'Быстро';
+            const speedValue = phrases[currentPhraseIndex]?.isSlow ? SLOW_WPM : FAST_WPM;
             document.getElementById('mode').textContent = modeText;
             document.getElementById('speed').textContent = speedValue;
         }
@@ -365,23 +379,25 @@
                 return;
             }
 
-            isSlowMode = phrases[currentPhraseIndex].isSlow;
             updateDisplay();
             highlightPhrase();
+
+            // Устанавливаем новую задержку для текущей фразы
+            const duration = phrases[currentPhraseIndex].duration;
+            clearInterval(intervalId);
+            intervalId = setInterval(nextPhrase, duration);
         }
 
         // Запуск
         function startReading() {
             if (intervalId) return;
-            isSlowMode = phrases[0]?.isSlow ?? true;
+            if (phrases.length === 0) return;
+
             updateDisplay();
             highlightPhrase();
 
-            const firstDelay = isSlowMode
-                ? (60 / SLOW_WPM) * 1000
-                : (60 / FAST_WPM) * 1000;
-
-            intervalId = setInterval(nextPhrase, firstDelay);
+            const firstDuration = phrases[0].duration;
+            intervalId = setInterval(nextPhrase, firstDuration);
 
             document.getElementById('btn-start').disabled = true;
             document.getElementById('btn-pause').disabled = false;
@@ -404,7 +420,6 @@
         function resetReading() {
             pauseReading();
             currentPhraseIndex = 0;
-            isSlowMode = phrases[0]?.isSlow ?? true;
             updateDisplay();
             highlightPhrase();
             document.getElementById('btn-start').disabled = false;
