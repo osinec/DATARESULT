@@ -320,18 +320,16 @@
         const SLOW_WPM = 120;
         const FAST_WPM = 200;
         const EXTRA_TIME_SECONDS = 0.3;
-        const phraseDelimiters = /[,.!?;:]/;
         const EXERCISES_JSON = 'exercises.json';
 
         let phrases = [];
         let currentPhraseIndex = 0;
         let isReading = false;
 
-        // Загрузка случайного упражнения
+        // 🔁 Загрузка случайного упражнения
         async function loadRandomExercise() {
             pauseReading();
             const status = document.getElementById('status');
-            // ❌ Ничего не показываем при загрузке
             status.textContent = '';
 
             try {
@@ -349,11 +347,11 @@
                     throw new Error('Упражнение не содержит текста');
                 }
 
-                splitIntoPhrasesWithTiming(exercise.text);
+                // Разбиваем на фразы с сохранением ВСЕХ знаков препинания
+                splitIntoPhrasesWithPunctuation(exercise.text);
                 renderText(exercise.title ? exercise.title.trim() : '');
                 resetState();
 
-                // ❌ Ничего не пишем после загрузки
             } catch (err) {
                 document.getElementById('text-container').innerHTML =
                     `<p style="text-align:center; color:#f87171; font-weight:bold;">❌ Ошибка: ${err.message}</p>`;
@@ -361,20 +359,25 @@
             }
         }
 
-        // Разбивка на фразы с сохранением знаков препинания
-        function splitIntoPhrasesWithTiming(text) {
+        // ✅ Разбивка с сохранением ВСЕХ знаков препинания, включая ... и ?!
+        function splitIntoPhrasesWithPunctuation(text) {
             phrases = [];
-            const parts = text.split(phraseDelimiters);
-            const delimiters = text.match(phraseDelimiters) || [];
 
-            for (let i = 0; i < parts.length; i++) {
-                let part = parts[i].trim();
-                if (!part) continue;
+            // Регулярное выражение: текст + знаки препинания (включая многоточие)
+            const regex = /([^,.!?;:]*)([,.!?;:]+|$)/g;
+            let match;
+            let totalCount = 0;
 
-                const fullText = part + (i < delimiters.length ? delimiters[i] : '');
+            while ((match = regex.exec(text)) !== null) {
+                let part = match[1].trim();
+                let punct = match[2] || ''; // Знаки препинания
+                let fullText = part + punct;
+                if (!fullText.trim()) continue;
+
                 const words = part.split(/\s+/).filter(w => w);
                 const wordCount = words.length;
 
+                // Случайный темп
                 const isSlow = Math.random() < 0.5;
                 const wpm = isSlow ? SLOW_WPM : FAST_WPM;
                 const seconds = (wordCount / wpm) * 60 + EXTRA_TIME_SECONDS;
@@ -386,15 +389,16 @@
                     duration: duration,
                     words: words
                 });
+
+                totalCount += wordCount;
             }
         }
 
-        // Отображение текста с сохранением знаков препинания
+        // ✅ Отображение текста
         function renderText(title) {
             const container = document.getElementById('text-container');
             container.innerHTML = '';
 
-            // Показываем заголовок, если есть
             if (title) {
                 const titleEl = document.createElement('div');
                 titleEl.className = 'exercise-title';
@@ -413,7 +417,7 @@
 
                 const phraseEl = document.createElement('span');
                 phraseEl.className = 'phrase';
-                phraseEl.textContent = phrase.text;  // Включая знак препинания
+                phraseEl.textContent = phrase.text; // Полный текст с пунктуацией
 
                 const progressBarOuter = document.createElement('div');
                 progressBarOuter.className = 'progress-bar-outer';
@@ -430,7 +434,7 @@
                 container.appendChild(document.createTextNode(' '));
             });
 
-            highlightPhrase();
+            // Подсветка запускается при старте
         }
 
         function resetState() {
@@ -475,9 +479,14 @@
             }, duration);
         }
 
+        // ✅ Перезапуск с начала при каждом нажатии
         function startReading() {
-            if (isReading || phrases.length === 0) return;
+            if (phrases.length === 0) return;
+
+            pauseReading();
+            currentPhraseIndex = 0;
             isReading = true;
+
             highlightPhrase();
 
             document.getElementById('btn-start').disabled = true;
