@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-    <title>📖 Скорочтение — Тренажёр</title>
+    <title>📖 Тренажер скорости </title>
 
     <!-- Подключаем шрифты -->
     <link href="https://fonts.googleapis.com/css2?family=Comfortaa:wght@400;500;600;700&family=Playfair+Display:wght@500;600;700&display=swap" rel="stylesheet">
@@ -72,7 +72,7 @@
         }
 
         .speed-info {
-            background: rgba(18, 100, 180, 0.8);
+            background: linear-gradient(90deg, #007bff, #0056b3);
             border-radius: 16px;
             padding: 20px;
             margin: 30px 0;
@@ -81,11 +81,21 @@
             justify-content: center;
             align-items: center;
             gap: 20px;
-            flex-wrap: wrap;
             font-weight: 600;
             box-shadow: 0 6px 20px rgba(0, 50, 100, 0.4);
             color: #ffffff;
             border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .speed-info .icon {
+            font-size: 24px;
+            color: #ff6347; /* Цвет иконки */
+        }
+
+        .speed-info .text {
+            display: flex;
+            align-items: center;
+            gap: 10px;
         }
 
         .text-area {
@@ -279,15 +289,14 @@
 
     <div class="container">
         <header>
-            <h1>📖 Тренировка скорости</h1>
-            <p class="subtitle">
-               Каждый раз меняется темп - адаптируйся!
-            </p>
+            <h1>📖 Тренажер скорости</h1>
         </header>
 
         <div class="speed-info">
-            🎯 <span id="mode">Медленно</span> &nbsp; • &nbsp;
-            <span id="speed">120</span> слов/мин
+            <div class="icon"><span>🎯</span></div>
+            <div class="text">
+                <strong id="mode">Каждый раз темп меняется </strong> • <span id="speed">Адаптируйся</span> слов/мин
+            </div>
         </div>
 
         <div id="text-container" class="text-area">
@@ -307,7 +316,7 @@
     <script>
         // ⚙️ Настройки
         const SLOW_WPM = 120;             // Медленная скорость
-        const FAST_WPM = 300;             // Быстрая скорость
+        const FAST_WPM = 200;             // Быстрая скорость
         const EXTRA_TIME_SECONDS = 0.3;   // Дополнительное время на фразу
         const phraseDelimiters = /[,.!?;:]/;
         const EXERCISES_JSON = 'exercises.json';
@@ -412,17 +421,9 @@
 
         function resetState() {
             currentPhraseIndex = 0;
-            updateDisplay();
             document.getElementById('btn-start').disabled = false;
             document.getElementById('btn-pause').disabled = true;
             document.getElementById('btn-reset').disabled = true;
-        }
-
-        function updateDisplay() {
-            const modeText = phrases[currentPhraseIndex]?.isSlow ? 'Медленно' : 'Быстро';
-            const speedValue = phrases[currentPhraseIndex]?.isSlow ? SLOW_WPM : FAST_WPM;
-            document.getElementById('mode').textContent = modeText;
-            document.getElementById('speed').textContent = speedValue;
         }
 
         function highlightPhrase() {
@@ -464,7 +465,6 @@
         function startReading() {
             if (isReading || phrases.length === 0) return;
             isReading = true;
-            updateDisplay();
             highlightPhrase();
 
             document.getElementById('btn-start').disabled = true;
@@ -487,7 +487,6 @@
         function resetReading() {
             pauseReading();
             currentPhraseIndex = 0;
-            updateDisplay();
             highlightPhrase();
             document.getElementById('btn-start').disabled = false;
             document.getElementById('btn-reset').disabled = true;
