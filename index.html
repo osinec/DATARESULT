@@ -302,7 +302,7 @@
         </div>
 
         <div id="text-container" class="text-area">
-            <p class="loading">🌀 Загрузка упражнения...</p>
+            <!-- Текст загружается динамически -->
         </div>
 
         <div class="controls">
@@ -320,75 +320,56 @@
         const SLOW_WPM = 120;
         const FAST_WPM = 200;
         const EXTRA_TIME_SECONDS = 0.3;
+        const phraseDelimiters = /[,.!?;:]/;
         const EXERCISES_JSON = 'exercises.json';
-
-        // 🔽 Встроенный fallback, если JSON не загрузится
-        const FALLBACK_EXERCISES = [
-            {
-                "title": "Тестовое упражнение",
-                "text": "Привет! Как дела? У меня всё хорошо... Сегодня я читаю быстро! Это здорово: внимание, скорость и понимание. Вперёд!!!"
-            },
-            {
-                "title": "Сказка",
-                "text": "Жили-были старик со старухой. Он говорит: «Пойди, старуха, испеки коржик». А она: «Да у нас муки нет!» — «Найди...»"
-            }
-        ];
 
         let phrases = [];
         let currentPhraseIndex = 0;
         let isReading = false;
 
-        // 🔁 Загрузка случайного упражнения (с fallback)
+        // Загрузка случайного упражнения
         async function loadRandomExercise() {
             pauseReading();
             const status = document.getElementById('status');
-            status.textContent = '';
-
-            let exercises = [];
+            status.textContent = ''; // Пусто
 
             try {
                 const response = await fetch(EXERCISES_JSON + '?v=' + Date.now());
                 if (!response.ok) throw new Error('Файл не найден');
-                exercises = await response.json();
+                const exercises = await response.json();
 
                 if (!Array.isArray(exercises) || exercises.length === 0) {
-                    throw new Error('Нет упражнений в JSON');
+                    throw new Error('Нет упражнений');
                 }
+
+                const exercise = exercises[Math.floor(Math.random() * exercises.length)];
+
+                if (!exercise.text || typeof exercise.text !== 'string') {
+                    throw new Error('Упражнение не содержит текста');
+                }
+
+                splitIntoPhrasesWithTiming(exercise.text);
+                renderText(exercise.title ? exercise.title.trim() : '');
+                resetState();
+
             } catch (err) {
-                console.warn('Ошибка загрузки JSON, используем fallback:', err);
-                exercises = FALLBACK_EXERCISES;
+                document.getElementById('text-container').innerHTML =
+                    `<p style="text-align:center; color:#f87171; font-weight:bold;">❌ Ошибка: ${err.message}</p>`;
+                status.textContent = 'Ошибка загрузки.';
             }
-
-            // Выбираем случайное упражнение
-            const exercise = exercises[Math.floor(Math.random() * exercises.length)];
-
-            if (!exercise.text || typeof exercise.text !== 'string') {
-                document.getElementById('text-container').innerHTML = 
-                    `<p style="color:#f87171; text-align:center;">❌ Нет текста для отображения</p>`;
-                return;
-            }
-
-            splitIntoPhrasesWithPunctuation(exercise.text);
-            renderText(exercise.title ? exercise.title.trim() : '');
-            resetState();
-
-            // Можно убрать или оставить краткое сообщение
-            // status.textContent = exercise.title ? `✅ ${exercise.title}` : '';
         }
 
-        // ✅ Разбивка с сохранением всех знаков препинания
-        function splitIntoPhrasesWithPunctuation(text) {
+        // Разбивка на фразы с сохранением знаков препинания
+        function splitIntoPhrasesWithTiming(text) {
             phrases = [];
-            const regex = /([^,.!?;:]*)([,.!?;:]+|$)/g;
-            let match;
+            const parts = text.split(phraseDelimiters);
+            const delimiters = text.match(phraseDelimiters) || [];
 
-            while ((match = regex.exec(text)) !== null) {
-                let part = match[1].trim();
-                let punct = match[2] || '';
-                let fullText = part + punct;
+            for (let i = 0; i < parts.length; i++) {
+                let part = parts[i].trim();
+                if (!part) continue;
 
-                if (!fullText.trim()) continue;
-
+                const fullText = part + (i < delimiters.length ? delimiters[i] : '');
                 const words = part.split(/\s+/).filter(w => w);
                 const wordCount = words.length;
 
@@ -404,12 +385,9 @@
                     words: words
                 });
             }
-
-            if (phrases.length === 0) {
-                phrases = [{ text: "Текст пуст.", isSlow: true, duration: 1000, words: [] }];
-            }
         }
 
+        // Отображение текста с сохранением знаков препинания
         function renderText(title) {
             const container = document.getElementById('text-container');
             container.innerHTML = '';
@@ -448,6 +426,8 @@
                 container.appendChild(containerEl);
                 container.appendChild(document.createTextNode(' '));
             });
+
+            // Не запускаем подсветку — только при старте
         }
 
         function resetState() {
@@ -492,11 +472,12 @@
             }, duration);
         }
 
+        // ✅ Главное изменение: всегда перезапускаем с начала
         function startReading() {
             if (phrases.length === 0) return;
 
-            pauseReading();
-            currentPhraseIndex = 0;
+            pauseReading();           // Останавливаем, если что-то уже идёт
+            currentPhraseIndex = 0;   // Сбрасываем на первую фразу
             isReading = true;
 
             highlightPhrase();
@@ -510,8 +491,9 @@
         function pauseReading() {
             if (!isReading) return;
             isReading = false;
-            const bars = document.querySelectorAll('.progress-bar-inner');
-            bars.forEach(bar => bar.style.transition = 'none');
+            if (document.querySelector('.progress-bar-inner')) {
+                document.querySelector('.progress-bar-inner').style.transition = 'none';
+            }
             document.getElementById('btn-start').disabled = false;
             document.getElementById('btn-pause').disabled = true;
             document.getElementById('status').textContent = '⏸️ На паузе';
