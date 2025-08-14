@@ -89,7 +89,7 @@
 
         .speed-info .icon {
             font-size: 24px;
-            color: #ff6347;
+            color: #ff6347; /* Цвет иконки */
         }
 
         .speed-info .text {
@@ -132,7 +132,7 @@
         .phrase {
             display: inline;
             padding: 0 2px;
-            white-space: normal;
+            white-space: normal; /* Теперь перенос работает! */
             word-wrap: break-word;
             word-break: break-word;
         }
@@ -324,9 +324,9 @@
 
     <script>
         // ⚙️ Настройки
-        const SLOW_WPM = 120;
-        const FAST_WPM = 200;
-        const EXTRA_TIME_SECONDS = 0.3;
+        const SLOW_WPM = 120;             // Медленная скорость
+        const FAST_WPM = 200;             // Быстрая скорость
+        const EXTRA_TIME_SECONDS = 0.3;   // Дополнительное время на фразу
         const phraseDelimiters = /[,.!?;:]/;
         const EXERCISES_JSON = 'exercises.json';
 
@@ -351,11 +351,10 @@
 
                 const exercise = exercises[Math.floor(Math.random() * exercises.length)];
                 splitIntoPhrasesWithTiming(exercise.text);
-                renderText(exercise.title || 'Без названия');
+                renderText(exercise.title);
                 resetState();
 
-                // Защита от undefined в названии
-                status.textContent = `✅ "${exercise.title || 'Без названия'}"`;
+                status.textContent = `✅ "${exercise.title}"`;
             } catch (err) {
                 document.getElementById('text-container').innerHTML =
                     `<p style="text-align:center; color:#f87171; font-weight:bold;">❌ Ошибка: ${err.message}</p>`;
@@ -377,7 +376,9 @@
                 const words = part.trim().split(/\s+/).filter(w => w);
                 const wordCount = words.length;
 
-                const isSlow = Math.random() < 0.5;
+                // ✅ СЛУЧАЙНЫЙ ВЫБОР: медленно или быстро
+                const isSlow = Math.random() < 0.5; // 50% шанс на каждый режим
+
                 const wpm = isSlow ? SLOW_WPM : FAST_WPM;
                 const seconds = (wordCount / wpm) * 60 + EXTRA_TIME_SECONDS;
                 const duration = seconds * 1000;
@@ -401,7 +402,7 @@
             titleEl.style.fontSize = '1.2em';
             titleEl.style.marginBottom = '20px';
             titleEl.style.color = '#a3d9ff';
-            titleEl.textContent = title || 'Упражнение';
+            titleEl.textContent = title;
             container.appendChild(titleEl);
 
             phrases.forEach((phrase, idx) => {
@@ -425,10 +426,7 @@
                 containerEl.appendChild(progressBarOuter);
 
                 container.appendChild(containerEl);
-
-                if (idx < phrases.length - 1) {
-                    container.appendChild(document.createTextNode(' '));
-                }
+                container.appendChild(document.createTextNode(' '));
             });
 
             highlightPhrase();
@@ -459,6 +457,7 @@
 
             phrase.classList.add(isSlow ? 'highlight-slow' : 'highlight-fast');
 
+            // Анимация ползунка
             const duration = phrases[currentPhraseIndex].duration;
             bar.style.transition = `width ${duration / 1000}s linear`;
             bar.style.width = '100%';
