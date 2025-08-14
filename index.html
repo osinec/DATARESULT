@@ -261,6 +261,7 @@
             margin-top: 15px;
             font-style: italic;
             opacity: 0.9;
+            min-height: 20px;
         }
 
         @media (max-width: 768px) {
@@ -301,7 +302,7 @@
         </div>
 
         <div id="text-container" class="text-area">
-            <p class="loading">🌀 Загрузка упражнения...</p>
+            <!-- Текст загружается динамически -->
         </div>
 
         <div class="controls">
@@ -311,7 +312,7 @@
             <button id="btn-next" onclick="loadRandomExercise()">⏭️ Следующее</button>
         </div>
 
-        <div id="status" class="status">Готов к началу</div>
+        <div id="status" class="status"></div>
     </div>
 
     <script>
@@ -330,7 +331,8 @@
         async function loadRandomExercise() {
             pauseReading();
             const status = document.getElementById('status');
-            status.textContent = '🔄 Загрузка...';
+            // ❌ Ничего не показываем при загрузке
+            status.textContent = '';
 
             try {
                 const response = await fetch(EXERCISES_JSON + '?v=' + Date.now());
@@ -351,11 +353,7 @@
                 renderText(exercise.title ? exercise.title.trim() : '');
                 resetState();
 
-                if (exercise.title) {
-                    status.textContent = `✅ ${exercise.title}`;
-                } else {
-                    status.textContent = '✅ Готово';
-                }
+                // ❌ Ничего не пишем после загрузки
             } catch (err) {
                 document.getElementById('text-container').innerHTML =
                     `<p style="text-align:center; color:#f87171; font-weight:bold;">❌ Ошибка: ${err.message}</p>`;
@@ -396,6 +394,7 @@
             const container = document.getElementById('text-container');
             container.innerHTML = '';
 
+            // Показываем заголовок, если есть
             if (title) {
                 const titleEl = document.createElement('div');
                 titleEl.className = 'exercise-title';
@@ -414,7 +413,7 @@
 
                 const phraseEl = document.createElement('span');
                 phraseEl.className = 'phrase';
-                phraseEl.textContent = phrase.text;  // Теперь включает знаки препинания
+                phraseEl.textContent = phrase.text;  // Включая знак препинания
 
                 const progressBarOuter = document.createElement('div');
                 progressBarOuter.className = 'progress-bar-outer';
@@ -504,7 +503,7 @@
             highlightPhrase();
             document.getElementById('btn-start').disabled = false;
             document.getElementById('btn-reset').disabled = true;
-            document.getElementById('status').textContent = '🔄 Сброшено.';
+            document.getElementById('status').textContent = '';
         }
 
         // Загрузка при старте
