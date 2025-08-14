@@ -180,10 +180,10 @@
 
         button {
             font-family: 'Comfortaa', cursive;
-            padding: 15px 30px;
+            padding: 15px 28px;
             font-size: 17px;
             font-weight: 600;
-            margin: 0 14px;
+            margin: 0 12px;
             cursor: pointer;
             border: none;
             border-radius: 14px;
@@ -231,6 +231,17 @@
             box-shadow: 0 10px 25px rgba(75, 85, 99, 0.4);
         }
 
+        #btn-next {
+            background: #6366f1;
+            color: white;
+        }
+
+        #btn-next:hover:not(:disabled) {
+            background: #4f46e5;
+            transform: translateY(-4px);
+            box-shadow: 0 10px 25px rgba(79, 70, 229, 0.4);
+        }
+
         .status {
             font-family: 'Comfortaa', cursive;
             text-align: center;
@@ -242,12 +253,24 @@
         }
 
         @media (max-width: 768px) {
+            .container {
+                margin: 20px 15px;
+                padding: 25px;
+            }
+
             .text-area {
                 font-size: 19px;
                 line-height: 1.8;
             }
+
             .phrase {
                 margin: 0 6px;
+            }
+
+            button {
+                margin: 10px;
+                padding: 14px 22px;
+                font-size: 16px;
             }
         }
     </style>
@@ -275,6 +298,7 @@
             <button id="btn-start" onclick="startReading()">▶️ Начать</button>
             <button id="btn-pause" onclick="pauseReading()" disabled>⏸️ Пауза</button>
             <button id="btn-reset" onclick="resetReading()" disabled>🔄 Сброс</button>
+            <button id="btn-next" onclick="loadRandomExercise()">⏭️ Следующее</button>
         </div>
 
         <div id="status" class="status">Готов к началу</div>
@@ -295,13 +319,17 @@
         // ║         КОНЕЦ НАСТРОЕК — ДАЛЬШЕ НЕ МЕНЯЙ       ║
         // ╚════════════════════════════════════════════════╝
 
-        let phrases = [];           // { text, isSlow, duration, words[] }
+        let phrases = [];
         let currentPhraseIndex = 0;
         let intervalId = null;
-        let progressInterval = null; // Для анимации ползунка
+        let progressInterval = null;
 
-        async function loadExercise() {
+        // Загрузка случайного упражнения
+        async function loadRandomExercise() {
+            pauseReading(); // Останавливаем текущее чтение
             const status = document.getElementById('status');
+            status.textContent = '🔄 Загрузка нового упражнения...';
+
             try {
                 const response = await fetch(EXERCISES_JSON + '?v=' + Date.now());
                 if (!response.ok) throw new Error('Файл не найден');
@@ -311,10 +339,13 @@
                     throw new Error('Нет упражнений');
                 }
 
+                // Выбираем случайное упражнение
                 const exercise = exercises[Math.floor(Math.random() * exercises.length)];
                 splitIntoPhrasesWithTiming(exercise.text);
                 renderText(exercise.title);
-                status.textContent = `Упражнение: "${exercise.title}"`;
+                resetState();
+
+                status.textContent = `✅ Упражнение: "${exercise.title}"`;
             } catch (err) {
                 document.getElementById('text-container').innerHTML =
                     `<p style="text-align:center; color:#f87171; font-weight:bold;">❌ Ошибка: ${err.message}</p>`;
@@ -322,6 +353,7 @@
             }
         }
 
+        // Разбивка на фразы с расчётом времени
         function splitIntoPhrasesWithTiming(text) {
             phrases = [];
             const parts = text.split(phraseDelimiters);
@@ -350,6 +382,7 @@
             }
         }
 
+        // Отображение текста
         function renderText(title) {
             const container = document.getElementById('text-container');
             container.innerHTML = '';
@@ -386,6 +419,16 @@
             highlightPhrase();
         }
 
+        // Сброс состояния
+        function resetState() {
+            currentPhraseIndex = 0;
+            updateDisplay();
+            document.getElementById('btn-start').disabled = false;
+            document.getElementById('btn-pause').disabled = true;
+            document.getElementById('btn-reset').disabled = true;
+        }
+
+        // Обновление режима
         function updateDisplay() {
             const modeText = phrases[currentPhraseIndex]?.isSlow ? 'Медленно' : 'Быстро';
             const speedValue = phrases[currentPhraseIndex]?.isSlow ? SLOW_WPM : FAST_WPM;
@@ -393,6 +436,7 @@
             document.getElementById('speed').textContent = speedValue;
         }
 
+        // Подсветка фразы и анимация ползунка
         function highlightPhrase() {
             const containers = document.querySelectorAll('.phrase-container');
             containers.forEach(el => {
@@ -410,8 +454,6 @@
             const isSlow = phrases[currentPhraseIndex].isSlow;
 
             phrase.classList.add(isSlow ? 'highlight-slow' : 'highlight-fast');
-
-            // Анимация ползунка
             animateProgressBar(bar, phrases[currentPhraseIndex].duration);
         }
 
@@ -423,10 +465,7 @@
                 const elapsed = Date.now() - startTime;
                 const progress = Math.min(elapsed / duration, 1);
                 bar.style.width = (progress * 100) + '%';
-
-                if (progress >= 1) {
-                    clearInterval(progressInterval);
-                }
+                if (progress >= 1) clearInterval(progressInterval);
             }, 50);
         }
 
@@ -440,19 +479,15 @@
 
             updateDisplay();
             highlightPhrase();
-
             const duration = phrases[currentPhraseIndex].duration;
             clearInterval(intervalId);
             intervalId = setInterval(nextPhrase, duration);
         }
 
         function startReading() {
-            if (intervalId) return;
-            if (phrases.length === 0) return;
-
+            if (intervalId || phrases.length === 0) return;
             updateDisplay();
             highlightPhrase();
-
             const firstDuration = phrases[0].duration;
             intervalId = setInterval(nextPhrase, firstDuration);
 
@@ -482,9 +517,9 @@
             document.getElementById('status').textContent = '🔄 Сброшено. Готов к началу.';
         }
 
+        // Загрузка первого упражнения при старте
         window.onload = () => {
-            loadExercise();
-            updateDisplay();
+            loadRandomExercise();
         };
     </script>
 </body>
