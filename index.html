@@ -281,7 +281,7 @@
         <header>
             <h1>📖 Скорочтение</h1>
             <p class="subtitle">
-                Переход к следующей фразе — только когда ползунок заполнится.
+                Скорость каждой фразы — случайная: быстро или медленно.
             </p>
         </header>
 
@@ -306,9 +306,9 @@
 
     <script>
         // ⚙️ Настройки
-        const SLOW_WPM = 120;
-        const FAST_WPM = 300;
-        const EXTRA_TIME_SECONDS = 0.3;
+        const SLOW_WPM = 120;             // Медленная скорость
+        const FAST_WPM = 300;             // Быстрая скорость
+        const EXTRA_TIME_SECONDS = 0.3;   // Дополнительное время на фразу
         const phraseDelimiters = /[,.!?;:]/;
         const EXERCISES_JSON = 'exercises.json';
 
@@ -344,6 +344,7 @@
             }
         }
 
+        // Разбивка на фразы с РАНДОМНЫМ выбором режима
         function splitIntoPhrasesWithTiming(text) {
             phrases = [];
             const parts = text.split(phraseDelimiters);
@@ -356,7 +357,9 @@
                 const fullText = part + (i < delimiters.length ? delimiters[i] : '');
                 const words = part.trim().split(/\s+/).filter(w => w);
                 const wordCount = words.length;
-                const isSlow = i % 2 === 0;
+
+                // ✅ СЛУЧАЙНЫЙ ВЫБОР: медленно или быстро
+                const isSlow = Math.random() < 0.5; // 50% шанс на каждый режим
 
                 const wpm = isSlow ? SLOW_WPM : FAST_WPM;
                 const seconds = (wordCount / wpm) * 60 + EXTRA_TIME_SECONDS;
@@ -440,7 +443,7 @@
 
             phrase.classList.add(isSlow ? 'highlight-slow' : 'highlight-fast');
 
-            // Анимация ползунка — и переход ПОСЛЕ завершения
+            // Анимация ползунка
             const duration = phrases[currentPhraseIndex].duration;
             bar.style.transition = `width ${duration / 1000}s linear`;
             bar.style.width = '100%';
