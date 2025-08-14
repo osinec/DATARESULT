@@ -101,15 +101,21 @@
             border: 1px solid rgba(100, 150, 255, 0.2);
             box-shadow: inset 0 4px 15px rgba(0, 0, 0, 0.2);
             overflow-y: auto;
-            max-height: 450px;
+            max-height: 500px;
             transition: all 0.3s ease;
             color: #ffffff;
         }
 
+        .phrase-container {
+            display: inline-block;
+            margin: 0 8px;
+            position: relative;
+        }
+
         .phrase {
             display: inline;
-            margin: 0 8px;
             padding: 0 2px;
+            white-space: nowrap;
         }
 
         .highlight-slow {
@@ -128,6 +134,33 @@
             font-weight: 700;
             box-shadow: 0 4px 12px rgba(251, 146, 60, 0.5);
             animation: pulse-orange 1s ease-in-out infinite alternate;
+        }
+
+        .progress-bar-outer {
+            width: 100%;
+            height: 4px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 2px;
+            margin-top: 4px;
+            overflow: hidden;
+            position: absolute;
+            left: 0;
+            bottom: -10px;
+        }
+
+        .progress-bar-inner {
+            height: 100%;
+            width: 0;
+            border-radius: 2px;
+            transition: width 0.1s linear;
+        }
+
+        .highlight-slow + .progress-bar-outer .progress-bar-inner {
+            background: #22c55e;
+        }
+
+        .highlight-fast + .progress-bar-outer .progress-bar-inner {
+            background: #f97316;
         }
 
         @keyframes pulse-green {
@@ -225,7 +258,7 @@
         <header>
             <h1>📖 Скорочтение</h1>
             <p class="subtitle">
-                Каждой фразе выделяется время на чтение. Зелёный — медленно, оранжевый — быстро.
+                Каждой фразе выделяется время. Ползунок показывает, какое слово сейчас читать.
             </p>
         </header>
 
@@ -252,29 +285,21 @@
         // ║           ⚙️ НАСТРОЙКИ — МОЖНО МЕНЯТЬ          ║
         // ╚════════════════════════════════════════════════╝
 
-        // 🔧 Скорость чтения (в словах в минуту)
-        const SLOW_WPM = 120;   // Медленное чтение
-        const FAST_WPM = 300;   // Быстрое чтение
-
-        // 🔧 Запас времени (в секундах) — добавляется к каждой фразе
-        // Полезно, чтобы пользователь успевал "переварить" фразу
-        const EXTRA_TIME_SECONDS = 0.3;
-
-        // 🔧 Разделители фраз (можно добавить свои)
+        const SLOW_WPM = 120;             // Медленная скорость
+        const FAST_WPM = 300;             // Быстрая скорость
+        const EXTRA_TIME_SECONDS = 0.3;   // Дополнительное время на фразу
         const phraseDelimiters = /[,.!?;:]/;
-
-        // 🔧 Путь к файлу с упражнениями
         const EXERCISES_JSON = 'exercises.json';
 
         // ╔════════════════════════════════════════════════╗
         // ║         КОНЕЦ НАСТРОЕК — ДАЛЬШЕ НЕ МЕНЯЙ       ║
         // ╚════════════════════════════════════════════════╝
 
-        let phrases = [];           // [{ text, isSlow, duration }]
+        let phrases = [];           // { text, isSlow, duration, words[] }
         let currentPhraseIndex = 0;
         let intervalId = null;
+        let progressInterval = null; // Для анимации ползунка
 
-        // Загрузка упражнения
         async function loadExercise() {
             const status = document.getElementById('status');
             try {
@@ -297,7 +322,6 @@
             }
         }
 
-        // Разбиваем текст на фразы и рассчитываем время на каждую
         function splitIntoPhrasesWithTiming(text) {
             phrases = [];
             const parts = text.split(phraseDelimiters);
@@ -305,28 +329,27 @@
 
             for (let i = 0; i < parts.length; i++) {
                 let part = parts[i].trim();
-                if (part.length === 0) continue;
+                if (!part) continue;
 
                 const fullText = part + (i < delimiters.length ? delimiters[i] : '');
-                const wordCount = part.trim().split(/\s+/).length;
-                const isSlow = i % 2 === 0; // Чередование: медленно → быстро
+                const words = part.trim().split(/\s+/).filter(w => w);
+                const wordCount = words.length;
+                const isSlow = i % 2 === 0;
 
-                // ⏱️ Рассчитываем время в миллисекундах
                 const wpm = isSlow ? SLOW_WPM : FAST_WPM;
-                const minutes = wordCount / wpm;                     // Время на слова
-                const seconds = minutes * 60 + EXTRA_TIME_SECONDS;   // Добавляем запас
-                const duration = seconds * 1000;                     // В миллисекунды
+                const seconds = (wordCount / wpm) * 60 + EXTRA_TIME_SECONDS;
+                const duration = seconds * 1000;
 
                 phrases.push({
                     text: fullText,
                     isSlow: isSlow,
                     duration: duration,
+                    words: words,
                     wordCount: wordCount
                 });
             }
         }
 
-        // Отображение текста
         function renderText(title) {
             const container = document.getElementById('text-container');
             container.innerHTML = '';
@@ -336,17 +359,33 @@
             titleEl.textContent = title;
             container.appendChild(titleEl);
 
-            phrases.forEach(phraseObj => {
-                const span = document.createElement('span');
-                span.className = 'phrase';
-                span.textContent = phraseObj.text + ' ';
-                container.appendChild(span);
+            phrases.forEach((phrase, idx) => {
+                const containerEl = document.createElement('span');
+                containerEl.className = 'phrase-container';
+                containerEl.dataset.index = idx;
+
+                const phraseEl = document.createElement('span');
+                phraseEl.className = 'phrase';
+                phraseEl.innerHTML = phrase.words.map(word => `<span>${word}</span>`).join(' ');
+
+                const progressBarOuter = document.createElement('div');
+                progressBarOuter.className = 'progress-bar-outer';
+
+                const progressBarInner = document.createElement('div');
+                progressBarInner.className = 'progress-bar-inner';
+                progressBarInner.style.width = '0%';
+
+                progressBarOuter.appendChild(progressBarInner);
+                containerEl.appendChild(phraseEl);
+                containerEl.appendChild(progressBarOuter);
+
+                container.appendChild(containerEl);
+                container.appendChild(document.createTextNode(' '));
             });
 
             highlightPhrase();
         }
 
-        // Обновление отображения режима
         function updateDisplay() {
             const modeText = phrases[currentPhraseIndex]?.isSlow ? 'Медленно' : 'Быстро';
             const speedValue = phrases[currentPhraseIndex]?.isSlow ? SLOW_WPM : FAST_WPM;
@@ -354,23 +393,43 @@
             document.getElementById('speed').textContent = speedValue;
         }
 
-        // Подсветка текущей фразы
         function highlightPhrase() {
-            const phraseElements = document.querySelectorAll('.phrase');
-            phraseElements.forEach(el => {
-                el.classList.remove('highlight-slow');
-                el.classList.remove('highlight-fast');
+            const containers = document.querySelectorAll('.phrase-container');
+            containers.forEach(el => {
+                const phrase = el.querySelector('.phrase');
+                const bar = el.querySelector('.progress-bar-inner');
+                phrase.classList.remove('highlight-slow', 'highlight-fast');
+                bar.style.width = '0%';
             });
 
-            if (currentPhraseIndex < phraseElements.length) {
-                const phrase = phrases[currentPhraseIndex];
-                const el = phraseElements[currentPhraseIndex];
-                el.classList.add(phrase.isSlow ? 'highlight-slow' : 'highlight-fast');
-                el.scrollIntoView({ behavior: 'smooth', block: 'center', inline: 'nearest' });
-            }
+            if (currentPhraseIndex >= containers.length) return;
+
+            const container = containers[currentPhraseIndex];
+            const phrase = container.querySelector('.phrase');
+            const bar = container.querySelector('.progress-bar-inner');
+            const isSlow = phrases[currentPhraseIndex].isSlow;
+
+            phrase.classList.add(isSlow ? 'highlight-slow' : 'highlight-fast');
+
+            // Анимация ползунка
+            animateProgressBar(bar, phrases[currentPhraseIndex].duration);
         }
 
-        // Следующая фраза
+        function animateProgressBar(bar, duration) {
+            if (progressInterval) clearInterval(progressInterval);
+            let startTime = Date.now();
+
+            progressInterval = setInterval(() => {
+                const elapsed = Date.now() - startTime;
+                const progress = Math.min(elapsed / duration, 1);
+                bar.style.width = (progress * 100) + '%';
+
+                if (progress >= 1) {
+                    clearInterval(progressInterval);
+                }
+            }, 50);
+        }
+
         function nextPhrase() {
             currentPhraseIndex++;
             if (currentPhraseIndex >= phrases.length) {
@@ -382,13 +441,11 @@
             updateDisplay();
             highlightPhrase();
 
-            // Устанавливаем новую задержку для текущей фразы
             const duration = phrases[currentPhraseIndex].duration;
             clearInterval(intervalId);
             intervalId = setInterval(nextPhrase, duration);
         }
 
-        // Запуск
         function startReading() {
             if (intervalId) return;
             if (phrases.length === 0) return;
@@ -405,18 +462,16 @@
             document.getElementById('status').textContent = '▶️ Чтение начато...';
         }
 
-        // Пауза
         function pauseReading() {
-            if (intervalId) {
-                clearInterval(intervalId);
-                intervalId = null;
-                document.getElementById('btn-start').disabled = false;
-                document.getElementById('btn-pause').disabled = true;
-                document.getElementById('status').textContent = '⏸️ На паузе';
-            }
+            if (intervalId) clearInterval(intervalId);
+            if (progressInterval) clearInterval(progressInterval);
+            intervalId = null;
+            progressInterval = null;
+            document.getElementById('btn-start').disabled = false;
+            document.getElementById('btn-pause').disabled = true;
+            document.getElementById('status').textContent = '⏸️ На паузе';
         }
 
-        // Сброс
         function resetReading() {
             pauseReading();
             currentPhraseIndex = 0;
@@ -427,7 +482,6 @@
             document.getElementById('status').textContent = '🔄 Сброшено. Готов к началу.';
         }
 
-        // Загрузка
         window.onload = () => {
             loadExercise();
             updateDisplay();
