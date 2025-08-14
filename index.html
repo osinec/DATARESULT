@@ -114,18 +114,27 @@
             max-height: 500px;
             transition: all 0.3s ease;
             color: #ffffff;
+            word-wrap: break-word;
+            word-break: break-word;
+            hyphens: auto;
         }
 
         .phrase-container {
             display: inline-block;
             margin: 0 8px;
             position: relative;
+            vertical-align: top;
+            max-width: 100%;
+            word-wrap: break-word;
+            word-break: break-word;
         }
 
         .phrase {
             display: inline;
             padding: 0 2px;
-            white-space: nowrap;
+            white-space: normal; /* Теперь перенос работает! */
+            word-wrap: break-word;
+            word-break: break-word;
         }
 
         .highlight-slow {
@@ -389,6 +398,10 @@
 
             const titleEl = document.createElement('div');
             titleEl.className = 'exercise-title';
+            titleEl.style.fontWeight = '600';
+            titleEl.style.fontSize = '1.2em';
+            titleEl.style.marginBottom = '20px';
+            titleEl.style.color = '#a3d9ff';
             titleEl.textContent = title;
             container.appendChild(titleEl);
 
