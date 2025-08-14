@@ -57,7 +57,7 @@
         }
 
         h1 {
-            font-family: 'Playfair Display', serif; /* Только h1 — другой шрифт */
+            font-family: 'Playfair Display', serif;
             font-size: 3rem;
             color: #a3d9ff;
             margin-bottom: 12px;
@@ -98,9 +98,9 @@
             padding: 35px;
             border-radius: 18px;
             background: rgba(40, 40, 60, 0.6);
-            font-family: 'Comfortaa', cursive; /* Текст упражнения — Comfortaa */
+            font-family: 'Comfortaa', cursive;
             font-size: 26px;
-            line-height: 2.1;
+            line-height: 2.2; /* Увеличил для читаемости */
             text-align: left;
             margin: 25px 0;
             border: 1px solid rgba(100, 150, 255, 0.2);
@@ -121,26 +121,31 @@
             text-shadow: 0 1px 3px rgba(0,0,0,0.3);
         }
 
+        /* Ключевое изменение: больше пространства между словами */
         .word {
             display: inline-block;
-            margin: 0 2px;
-            transition: all 0.18s cubic-bezier(0.3, 0, 0.7, 1);
+            margin: 0 8px; /* Увеличил отступ между словами */
+            letter-spacing: 0.5px;
+            /* Без padding — только margin */
         }
 
+        /* Подсветка — только фон и border-radius, без padding */
         .highlight {
             background: linear-gradient(135deg, #ffdd57, #fab748);
             color: #1a1a2e;
-            border-radius: 8px;
-            padding: 0 6px;
+            border-radius: 6px;
+            /* Убрали padding, чтобы не "наезжало" */
+            /* Вместо padding — margin уже делает отступ */
             font-weight: 700;
-            transform: scale(1.12);
-            box-shadow: 0 6px 15px rgba(253, 221, 87, 0.4);
+            box-shadow: 0 4px 12px rgba(253, 221, 87, 0.5);
             animation: pulse-glow 1s ease-in-out infinite alternate;
+            /* Сделаем подсветку чуть меньше, но чётче */
+            transform: scale(1.08);
         }
 
         @keyframes pulse-glow {
-            from { box-shadow: 0 6px 15px rgba(253, 221, 87, 0.4); }
-            to { box-shadow: 0 8px 22px rgba(253, 221, 87, 0.6); transform: scale(1.14); }
+            from { box-shadow: 0 4px 12px rgba(253, 221, 87, 0.5); transform: scale(1.08); }
+            to { box-shadow: 0 6px 18px rgba(253, 221, 87, 0.7); transform: scale(1.12); }
         }
 
         /* Управление */
@@ -150,7 +155,7 @@
         }
 
         button {
-            font-family: 'Comfortaa', cursive; /* Кнопки — Comfortaa */
+            font-family: 'Comfortaa', cursive;
             padding: 15px 30px;
             font-size: 17px;
             font-weight: 600;
@@ -228,6 +233,10 @@
                 font-size: 19px;
                 line-height: 1.8;
                 padding: 25px;
+            }
+
+            .word {
+                margin: 0 6px; /* Адаптивный отступ */
             }
 
             .speed-info {
