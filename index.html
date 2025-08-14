@@ -281,7 +281,7 @@
         <header>
             <h1>📖 Скорочтение</h1>
             <p class="subtitle">
-                Каждой фразе выделяется время. Ползунок показывает, какое слово сейчас читать.
+                Переход к следующей фразе — только когда ползунок заполнится.
             </p>
         </header>
 
@@ -305,30 +305,22 @@
     </div>
 
     <script>
-        // ╔════════════════════════════════════════════════╗
-        // ║           ⚙️ НАСТРОЙКИ — МОЖНО МЕНЯТЬ          ║
-        // ╚════════════════════════════════════════════════╝
-
-        const SLOW_WPM = 120;             // Медленная скорость
-        const FAST_WPM = 300;             // Быстрая скорость
-        const EXTRA_TIME_SECONDS = 0.3;   // Дополнительное время на фразу
+        // ⚙️ Настройки
+        const SLOW_WPM = 120;
+        const FAST_WPM = 300;
+        const EXTRA_TIME_SECONDS = 0.3;
         const phraseDelimiters = /[,.!?;:]/;
         const EXERCISES_JSON = 'exercises.json';
 
-        // ╔════════════════════════════════════════════════╗
-        // ║         КОНЕЦ НАСТРОЕК — ДАЛЬШЕ НЕ МЕНЯЙ       ║
-        // ╚════════════════════════════════════════════════╝
-
         let phrases = [];
         let currentPhraseIndex = 0;
-        let intervalId = null;
-        let progressInterval = null;
+        let isReading = false;
 
         // Загрузка случайного упражнения
         async function loadRandomExercise() {
-            pauseReading(); // Останавливаем текущее чтение
+            pauseReading();
             const status = document.getElementById('status');
-            status.textContent = '🔄 Загрузка нового упражнения...';
+            status.textContent = '🔄 Загрузка...';
 
             try {
                 const response = await fetch(EXERCISES_JSON + '?v=' + Date.now());
@@ -339,21 +331,19 @@
                     throw new Error('Нет упражнений');
                 }
 
-                // Выбираем случайное упражнение
                 const exercise = exercises[Math.floor(Math.random() * exercises.length)];
                 splitIntoPhrasesWithTiming(exercise.text);
                 renderText(exercise.title);
                 resetState();
 
-                status.textContent = `✅ Упражнение: "${exercise.title}"`;
+                status.textContent = `✅ "${exercise.title}"`;
             } catch (err) {
                 document.getElementById('text-container').innerHTML =
                     `<p style="text-align:center; color:#f87171; font-weight:bold;">❌ Ошибка: ${err.message}</p>`;
-                status.textContent = 'Не удалось загрузить текст.';
+                status.textContent = 'Ошибка загрузки.';
             }
         }
 
-        // Разбивка на фразы с расчётом времени
         function splitIntoPhrasesWithTiming(text) {
             phrases = [];
             const parts = text.split(phraseDelimiters);
@@ -376,13 +366,11 @@
                     text: fullText,
                     isSlow: isSlow,
                     duration: duration,
-                    words: words,
-                    wordCount: wordCount
+                    words: words
                 });
             }
         }
 
-        // Отображение текста
         function renderText(title) {
             const container = document.getElementById('text-container');
             container.innerHTML = '';
@@ -419,7 +407,6 @@
             highlightPhrase();
         }
 
-        // Сброс состояния
         function resetState() {
             currentPhraseIndex = 0;
             updateDisplay();
@@ -428,7 +415,6 @@
             document.getElementById('btn-reset').disabled = true;
         }
 
-        // Обновление режима
         function updateDisplay() {
             const modeText = phrases[currentPhraseIndex]?.isSlow ? 'Медленно' : 'Быстро';
             const speedValue = phrases[currentPhraseIndex]?.isSlow ? SLOW_WPM : FAST_WPM;
@@ -436,7 +422,6 @@
             document.getElementById('speed').textContent = speedValue;
         }
 
-        // Подсветка фразы и анимация ползунка
         function highlightPhrase() {
             const containers = document.querySelectorAll('.phrase-container');
             containers.forEach(el => {
@@ -446,7 +431,7 @@
                 bar.style.width = '0%';
             });
 
-            if (currentPhraseIndex >= containers.length) return;
+            if (currentPhraseIndex >= containers.length || !isReading) return;
 
             const container = containers[currentPhraseIndex];
             const phrase = container.querySelector('.phrase');
@@ -454,42 +439,30 @@
             const isSlow = phrases[currentPhraseIndex].isSlow;
 
             phrase.classList.add(isSlow ? 'highlight-slow' : 'highlight-fast');
-            animateProgressBar(bar, phrases[currentPhraseIndex].duration);
-        }
 
-        function animateProgressBar(bar, duration) {
-            if (progressInterval) clearInterval(progressInterval);
-            let startTime = Date.now();
-
-            progressInterval = setInterval(() => {
-                const elapsed = Date.now() - startTime;
-                const progress = Math.min(elapsed / duration, 1);
-                bar.style.width = (progress * 100) + '%';
-                if (progress >= 1) clearInterval(progressInterval);
-            }, 50);
-        }
-
-        function nextPhrase() {
-            currentPhraseIndex++;
-            if (currentPhraseIndex >= phrases.length) {
-                pauseReading();
-                document.getElementById('status').textContent = '✅ Чтение завершено!';
-                return;
-            }
-
-            updateDisplay();
-            highlightPhrase();
+            // Анимация ползунка — и переход ПОСЛЕ завершения
             const duration = phrases[currentPhraseIndex].duration;
-            clearInterval(intervalId);
-            intervalId = setInterval(nextPhrase, duration);
+            bar.style.transition = `width ${duration / 1000}s linear`;
+            bar.style.width = '100%';
+
+            setTimeout(() => {
+                if (isReading) {
+                    currentPhraseIndex++;
+                    if (currentPhraseIndex < phrases.length) {
+                        highlightPhrase();
+                    } else {
+                        pauseReading();
+                        document.getElementById('status').textContent = '✅ Чтение завершено!';
+                    }
+                }
+            }, duration);
         }
 
         function startReading() {
-            if (intervalId || phrases.length === 0) return;
+            if (isReading || phrases.length === 0) return;
+            isReading = true;
             updateDisplay();
             highlightPhrase();
-            const firstDuration = phrases[0].duration;
-            intervalId = setInterval(nextPhrase, firstDuration);
 
             document.getElementById('btn-start').disabled = true;
             document.getElementById('btn-pause').disabled = false;
@@ -498,10 +471,11 @@
         }
 
         function pauseReading() {
-            if (intervalId) clearInterval(intervalId);
-            if (progressInterval) clearInterval(progressInterval);
-            intervalId = null;
-            progressInterval = null;
+            if (!isReading) return;
+            isReading = false;
+            if (document.querySelector('.progress-bar-inner')) {
+                document.querySelector('.progress-bar-inner').style.transition = 'none';
+            }
             document.getElementById('btn-start').disabled = false;
             document.getElementById('btn-pause').disabled = true;
             document.getElementById('status').textContent = '⏸️ На паузе';
@@ -514,10 +488,10 @@
             highlightPhrase();
             document.getElementById('btn-start').disabled = false;
             document.getElementById('btn-reset').disabled = true;
-            document.getElementById('status').textContent = '🔄 Сброшено. Готов к началу.';
+            document.getElementById('status').textContent = '🔄 Сброшено.';
         }
 
-        // Загрузка первого упражнения при старте
+        // Загрузка при старте
         window.onload = () => {
             loadRandomExercise();
         };
