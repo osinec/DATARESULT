@@ -79,34 +79,109 @@
             border: 1px solid rgba(255, 255, 255, 0.1);
         }
 
+        .speed-info .icon {
+            font-size: 24px;
+            color: #ff6347;
+        }
+
+        .speed-info .text {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
         .text-area {
             min-height: 240px;
-            padding: 40px;
+            padding: 35px;
             border-radius: 18px;
             background: rgba(40, 40, 60, 0.6);
             font-family: 'Comfortaa', cursive;
-            font-size: 28px;
-            line-height: 3;
-            text-align: center;
+            font-size: 20px;
+            line-height: 2.2;
+            text-align: left;
             margin: 25px 0;
             border: 1px solid rgba(100, 150, 255, 0.2);
             box-shadow: inset 0 4px 15px rgba(0, 0, 0, 0.2);
-            overflow: hidden;
+            overflow-y: auto;
             max-height: 500px;
-            color: #cccccc;
-            word-wrap: break-word;
-        }
-
-        .word-display {
-            font-weight: 600;
+            transition: all 0.3s ease;
             color: #ffffff;
-            letter-spacing: 1px;
+            word-wrap: break-word;
+            word-break: break-word;
+            hyphens: auto;
         }
 
-        .word-display .focus {
-            color: #4ade80;
+        .phrase-container {
+            display: inline-block;
+            margin: 0 8px;
+            position: relative;
+            vertical-align: top;
+            max-width: 100%;
+            word-wrap: break-word;
+            word-break: break-word;
+        }
+
+        .phrase {
+            display: inline;
+            padding: 0 2px;
+            white-space: normal;
+            word-wrap: break-word;
+            word-break: break-word;
+        }
+
+        .highlight-slow {
+            background: linear-gradient(135deg, #4ade80, #22c55e);
+            color: #000;
+            border-radius: 6px;
             font-weight: 700;
-            text-shadow: 0 0 8px rgba(74, 222, 128, 0.6);
+            box-shadow: 0 4px 12px rgba(74, 222, 128, 0.5);
+            animation: pulse-green 1s ease-in-out infinite alternate;
+        }
+
+        .highlight-fast {
+            background: linear-gradient(135deg, #fb923c, #f97316);
+            color: #000;
+            border-radius: 6px;
+            font-weight: 700;
+            box-shadow: 0 4px 12px rgba(251, 146, 60, 0.5);
+            animation: pulse-orange 1s ease-in-out infinite alternate;
+        }
+
+        .progress-bar-outer {
+            width: 100%;
+            height: 4px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 2px;
+            margin-top: 4px;
+            overflow: hidden;
+            position: absolute;
+            left: 0;
+            bottom: -10px;
+        }
+
+        .progress-bar-inner {
+            height: 100%;
+            width: 0;
+            border-radius: 2px;
+            transition: width 0.1s linear;
+        }
+
+        .highlight-slow + .progress-bar-outer .progress-bar-inner {
+            background: #22c55e;
+        }
+
+        .highlight-fast + .progress-bar-outer .progress-bar-inner {
+            background: #f97316;
+        }
+
+        @keyframes pulse-green {
+            from { box-shadow: 0 4px 12px rgba(74, 222, 128, 0.5); }
+            to { box-shadow: 0 6px 18px rgba(74, 222, 128, 0.7); transform: scale(1.02); }
+        }
+
+        @keyframes pulse-orange {
+            from { box-shadow: 0 4px 12px rgba(251, 146, 60, 0.5); }
+            to { box-shadow: 0 6px 18px rgba(251, 146, 60, 0.7); transform: scale(1.02); }
         }
 
         .controls {
@@ -196,8 +271,12 @@
             }
 
             .text-area {
-                font-size: 22px;
-                padding: 30px;
+                font-size: 16px;
+                line-height: 1.8;
+            }
+
+            .phrase {
+                margin: 0 6px;
             }
 
             button {
@@ -216,13 +295,14 @@
         </header>
 
         <div class="speed-info">
+            <div class="icon"><span>🎯</span></div>
             <div class="text">
-                <strong>Постепенная подсветка слов</strong> • <span id="speed">Скорость адаптируется</span> слов/мин
+                <strong>Каждый раз темп меняется</strong> • <span id="speed">Адаптируйся</span> слов/мин
             </div>
         </div>
 
         <div id="text-container" class="text-area">
-            <div id="word-display" class="word-display">Готов к старту...</div>
+            <!-- Текст загружается динамически -->
         </div>
 
         <div class="controls">
@@ -239,19 +319,19 @@
         // Настройки
         const SLOW_WPM = 120;
         const FAST_WPM = 200;
-        const WORD_DURATION_BASE = 60 / 1000; // 1 минута / 1000 мс
+        const EXTRA_TIME_SECONDS = 0.3;
+        const phraseDelimiters = /[,.!?;:]/;
         const EXERCISES_JSON = 'exercises.json';
 
-        let words = [];
-        let currentWordIndex = 0;
+        let phrases = [];
+        let currentPhraseIndex = 0;
         let isReading = false;
-        let readingTimer = null;
 
         // Загрузка случайного упражнения
         async function loadRandomExercise() {
             pauseReading();
             const status = document.getElementById('status');
-            status.textContent = '';
+            status.textContent = ''; // Пусто
 
             try {
                 const response = await fetch(EXERCISES_JSON + '?v=' + Date.now());
@@ -268,101 +348,154 @@
                     throw new Error('Упражнение не содержит текста');
                 }
 
-                // Разбиваем на слова
-                splitIntoWords(exercise.text);
+                splitIntoPhrasesWithTiming(exercise.text);
+                renderText(exercise.title ? exercise.title.trim() : '');
                 resetState();
 
             } catch (err) {
-                document.getElementById('word-display').textContent = `❌ Ошибка: ${err.message}`;
+                document.getElementById('text-container').innerHTML =
+                    `<p style="text-align:center; color:#f87171; font-weight:bold;">❌ Ошибка: ${err.message}</p>`;
                 status.textContent = 'Ошибка загрузки.';
             }
         }
 
-        // Разбивка на слова с сохранением знаков препинания
-        function splitIntoWords(text) {
-            // Удаляем лишние пробелы и разбиваем на слова с сохранением знаков препинания
-            const allWords = text.trim().split(/\s+/).filter(w => w);
+        // Разбивка на фразы с сохранением знаков препинания
+        function splitIntoPhrasesWithTiming(text) {
+            phrases = [];
+            const parts = text.split(phraseDelimiters);
+            const delimiters = (text.match(new RegExp(`[${phraseDelimiters.source}]`, 'g')) || []);
 
-            words = allWords.map(word => ({
-                text: word,
-                wpm: Math.random() < 0.5 ? SLOW_WPM : FAST_WPM // Случайная скорость для каждого слова
-            }));
+            for (let i = 0; i < parts.length; i++) {
+                let part = parts[i].trim();
+                if (!part) continue;
 
-            // Обновляем отображение скорости
-            document.getElementById('speed').textContent = `${SLOW_WPM}–${FAST_WPM}`;
+                // Сохраняем разделитель, если он есть
+                const delimiter = i < delimiters.length ? delimiters[i] : '';
+                const fullText = part + delimiter;
+                const words = part.split(/\s+/).filter(w => w);
+                const wordCount = words.length;
+
+                const isSlow = Math.random() < 0.5;
+                const wpm = isSlow ? SLOW_WPM : FAST_WPM;
+                const seconds = (wordCount / wpm) * 60 + EXTRA_TIME_SECONDS;
+                const duration = seconds * 1000;
+
+                phrases.push({
+                    text: fullText,
+                    isSlow: isSlow,
+                    duration: duration,
+                    words: words
+                });
+            }
+        }
+
+        // Отображение текста с сохранением знаков препинания
+        function renderText(title) {
+            const container = document.getElementById('text-container');
+            container.innerHTML = '';
+
+            if (title) {
+                const titleEl = document.createElement('div');
+                titleEl.className = 'exercise-title';
+                titleEl.style.fontWeight = '600';
+                titleEl.style.fontSize = '1.2em';
+                titleEl.style.marginBottom = '20px';
+                titleEl.style.color = '#a3d9ff';
+                titleEl.textContent = title;
+                container.appendChild(titleEl);
+            }
+
+            phrases.forEach((phrase, idx) => {
+                const containerEl = document.createElement('span');
+                containerEl.className = 'phrase-container';
+                containerEl.dataset.index = idx;
+
+                const phraseEl = document.createElement('span');
+                phraseEl.className = 'phrase';
+                phraseEl.textContent = phrase.text;
+
+                const progressBarOuter = document.createElement('div');
+                progressBarOuter.className = 'progress-bar-outer';
+
+                const progressBarInner = document.createElement('div');
+                progressBarInner.className = 'progress-bar-inner';
+                progressBarInner.style.width = '0%';
+
+                progressBarOuter.appendChild(progressBarInner);
+                containerEl.appendChild(phraseEl);
+                containerEl.appendChild(progressBarOuter);
+
+                container.appendChild(containerEl);
+                container.appendChild(document.createTextNode(' '));
+            });
+
+            // Не запускаем подсветку — только при старте
         }
 
         function resetState() {
-            currentWordIndex = 0;
+            currentPhraseIndex = 0;
             document.getElementById('btn-start').disabled = false;
             document.getElementById('btn-pause').disabled = true;
             document.getElementById('btn-reset').disabled = true;
-            document.getElementById('word-display').textContent = 'Готов к старту...';
         }
 
-        function displayWord(wordObj) {
-            const word = wordObj.text;
-            const focusIndex = Math.min(1, word.length - 1); // Фокус на 2-й букве (или 1-й, если короткое)
-            let highlighted = '';
+        function highlightPhrase() {
+            const containers = document.querySelectorAll('.phrase-container');
+            containers.forEach(el => {
+                const phrase = el.querySelector('.phrase');
+                const bar = el.querySelector('.progress-bar-inner');
+                phrase.classList.remove('highlight-slow', 'highlight-fast');
+                bar.style.width = '0%';
+            });
 
-            for (let i = 0; i < word.length; i++) {
-                if (i === focusIndex) {
-                    highlighted += `<span class="focus">${word[i]}</span>`;
-                } else {
-                    highlighted += word[i];
+            if (currentPhraseIndex >= containers.length || !isReading) return;
+
+            const container = containers[currentPhraseIndex];
+            const phrase = container.querySelector('.phrase');
+            const bar = container.querySelector('.progress-bar-inner');
+            const isSlow = phrases[currentPhraseIndex].isSlow;
+
+            phrase.classList.add(isSlow ? 'highlight-slow' : 'highlight-fast');
+
+            const duration = phrases[currentPhraseIndex].duration;
+            bar.style.transition = `width ${duration / 1000}s linear`;
+            bar.style.width = '100%';
+
+            setTimeout(() => {
+                if (isReading) {
+                    currentPhraseIndex++;
+                    if (currentPhraseIndex < phrases.length) {
+                        highlightPhrase();
+                    } else {
+                        pauseReading();
+                        document.getElementById('status').textContent = '✅ Чтение завершено!';
+                    }
                 }
-            }
-
-            return highlighted;
+            }, duration);
         }
 
+        // ✅ Главное изменение: всегда перезапускаем с начала
         function startReading() {
-            if (words.length === 0) return;
+            if (phrases.length === 0) return;
 
-            pauseReading();
+            pauseReading();           // Останавливаем, если что-то уже идёт
+            currentPhraseIndex = 0;   // Сбрасываем на первую фразу
             isReading = true;
-            currentWordIndex = 0;
 
-            const status = document.getElementById('status');
-            status.textContent = '▶️ Чтение начато...';
+            highlightPhrase();
 
             document.getElementById('btn-start').disabled = true;
             document.getElementById('btn-pause').disabled = false;
             document.getElementById('btn-reset').disabled = false;
-
-            showNextWord();
-        }
-
-        function showNextWord() {
-            if (!isReading || currentWordIndex >= words.length) {
-                pauseReading();
-                document.getElementById('word-display').textContent = '✅ Готово!';
-                document.getElementById('status').textContent = 'Чтение завершено!';
-                return;
-            }
-
-            const word = words[currentWordIndex];
-            const fullText = words.map((w, idx) => {
-                if (idx === currentWordIndex) {
-                    return `<span class="focus">${displayWord(word)}</span>`;
-                } else {
-                    return w.text;
-                }
-            }).join(' ');
-
-            document.getElementById('word-display').innerHTML = fullText;
-
-            const durationMs = (WORD_DURATION_BASE / word.wpm) * 60 * 1000; // мс на слово
-            readingTimer = setTimeout(() => {
-                currentWordIndex++;
-                showNextWord();
-            }, durationMs);
+            document.getElementById('status').textContent = '▶️ Чтение начато...';
         }
 
         function pauseReading() {
             if (!isReading) return;
             isReading = false;
-            clearTimeout(readingTimer);
+            if (document.querySelector('.progress-bar-inner')) {
+                document.querySelector('.progress-bar-inner').style.transition = 'none';
+            }
             document.getElementById('btn-start').disabled = false;
             document.getElementById('btn-pause').disabled = true;
             document.getElementById('status').textContent = '⏸️ На паузе';
@@ -370,17 +503,11 @@
 
         function resetReading() {
             pauseReading();
-            currentWordIndex = 0;
+            currentPhraseIndex = 0;
+            highlightPhrase();
             document.getElementById('btn-start').disabled = false;
             document.getElementById('btn-reset').disabled = true;
             document.getElementById('status').textContent = '';
-            document.getElementById('word-display').textContent = 'Сброс...';
-            setTimeout(() => {
-                showNextWord();
-                isReading = true;
-                document.getElementById('btn-start').disabled = true;
-                document.getElementById('btn-pause').disabled = false;
-            }, 800);
         }
 
         // Загрузка при старте
@@ -389,4 +516,4 @@
         };
     </script>
 </body>
-</html>
+</html> 
