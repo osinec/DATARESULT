@@ -127,30 +127,27 @@
             white-space: normal;
             word-wrap: break-word;
             word-break: break-word;
+            transition: color 0.2s ease;
         }
 
+        /* Подсветка через цвет текста */
         .highlight-slow {
-            background: linear-gradient(135deg, #4ade80, #22c55e);
-            color: #000;
-            border-radius: 6px;
+            color: #60a5fa; /* Синий */
             font-weight: 700;
-            box-shadow: 0 4px 12px rgba(74, 222, 128, 0.5);
-            animation: pulse-green 1s ease-in-out infinite alternate;
+            text-shadow: 0 1px 3px rgba(96, 165, 250, 0.4);
         }
 
         .highlight-fast {
-            background: linear-gradient(135deg, #fb923c, #f97316);
-            color: #000;
-            border-radius: 6px;
+            color: #fb923c; /* Оранжевый */
             font-weight: 700;
-            box-shadow: 0 4px 12px rgba(251, 146, 60, 0.5);
-            animation: pulse-orange 1s ease-in-out infinite alternate;
+            text-shadow: 0 1px 3px rgba(251, 146, 60, 0.4);
         }
 
+        /* Прогресс-бар под текстом */
         .progress-bar-outer {
             width: 100%;
             height: 4px;
-            background: rgba(255, 255, 255, 0.2);
+            background: rgba(255, 255, 255, 0.1);
             border-radius: 2px;
             margin-top: 4px;
             overflow: hidden;
@@ -167,21 +164,11 @@
         }
 
         .highlight-slow + .progress-bar-outer .progress-bar-inner {
-            background: #22c55e;
+            background: #60a5fa;
         }
 
         .highlight-fast + .progress-bar-outer .progress-bar-inner {
-            background: #f97316;
-        }
-
-        @keyframes pulse-green {
-            from { box-shadow: 0 4px 12px rgba(74, 222, 128, 0.5); }
-            to { box-shadow: 0 6px 18px rgba(74, 222, 128, 0.7); transform: scale(1.02); }
-        }
-
-        @keyframes pulse-orange {
-            from { box-shadow: 0 4px 12px rgba(251, 146, 60, 0.5); }
-            to { box-shadow: 0 6px 18px rgba(251, 146, 60, 0.7); transform: scale(1.02); }
+            background: #fb923c;
         }
 
         .controls {
@@ -320,7 +307,7 @@
         const SLOW_WPM = 120;
         const FAST_WPM = 200;
         const EXTRA_TIME_SECONDS = 0.3;
-        const phraseDelimiters = /[,.!?;:]/;
+        const MIN_WORDS_PER_PHRASE = 4; // Минимум 4 слова в фразе
         const EXERCISES_JSON = 'exercises.json';
 
         let phrases = [];
@@ -331,7 +318,7 @@
         async function loadRandomExercise() {
             pauseReading();
             const status = document.getElementById('status');
-            status.textContent = ''; // Пусто
+            status.textContent = ''; // Очистка статуса
 
             try {
                 const response = await fetch(EXERCISES_JSON + '?v=' + Date.now());
@@ -359,37 +346,61 @@
             }
         }
 
-        // Разбивка на фразы с сохранением знаков препинания
+        // Разбивка на фразы с минимум 4 словами
         function splitIntoPhrasesWithTiming(text) {
             phrases = [];
-            const parts = text.split(phraseDelimiters);
-            const delimiters = (text.match(new RegExp(`[${phraseDelimiters.source}]`, 'g')) || []);
+            const rawParts = text.split(/([,.!?;:])/); // Разделяем с сохранением разделителей
+            let parts = [];
+
+            // Собираем части с разделителями
+            for (let i = 0; i < rawParts.length; i += 2) {
+                const part = rawParts[i].trim();
+                const delimiter = i + 1 < rawParts.length ? rawParts[i + 1] : '';
+                if (part) {
+                    parts.push({ text: part, delimiter });
+                }
+            }
+
+            if (parts.length === 0) return;
+
+            let currentPhrase = '';
+            let currentWords = [];
 
             for (let i = 0; i < parts.length; i++) {
-                let part = parts[i].trim();
-                if (!part) continue;
+                const { text, delimiter } = parts[i];
+                const words = text.split(/\s+/).filter(w => w);
+                currentPhrase += text + delimiter + ' ';
+                currentWords.push(...words);
 
-                // Сохраняем разделитель, если он есть
-                const delimiter = i < delimiters.length ? delimiters[i] : '';
-                const fullText = part + delimiter;
-                const words = part.split(/\s+/).filter(w => w);
-                const wordCount = words.length;
+                // Если уже набрали 4+ слов и это не последняя часть — фиксируем фразу
+                if (currentWords.length >= MIN_WORDS_PER_PHRASE && i < parts.length - 1) {
+                    finalizePhrase(currentPhrase.trim(), currentWords);
+                    currentPhrase = '';
+                    currentWords = [];
+                }
+            }
 
-                const isSlow = Math.random() < 0.5;
-                const wpm = isSlow ? SLOW_WPM : FAST_WPM;
-                const seconds = (wordCount / wpm) * 60 + EXTRA_TIME_SECONDS;
-                const duration = seconds * 1000;
-
-                phrases.push({
-                    text: fullText,
-                    isSlow: isSlow,
-                    duration: duration,
-                    words: words
-                });
+            // Добавляем остаток (даже если <4 слов)
+            if (currentPhrase.trim()) {
+                finalizePhrase(currentPhrase.trim(), currentWords);
             }
         }
 
-        // Отображение текста с сохранением знаков препинания
+        function finalizePhrase(text, words) {
+            const isSlow = Math.random() < 0.5;
+            const wpm = isSlow ? SLOW_WPM : FAST_WPM;
+            const wordCount = words.length;
+            const duration = ((wordCount / wpm) * 60 + EXTRA_TIME_SECONDS) * 1000;
+
+            phrases.push({
+                text,
+                isSlow,
+                duration,
+                words: words
+            });
+        }
+
+        // Отображение текста
         function renderText(title) {
             const container = document.getElementById('text-container');
             container.innerHTML = '';
@@ -428,8 +439,6 @@
                 container.appendChild(containerEl);
                 container.appendChild(document.createTextNode(' '));
             });
-
-            // Не запускаем подсветку — только при старте
         }
 
         function resetState() {
@@ -474,12 +483,11 @@
             }, duration);
         }
 
-        // ✅ Главное изменение: всегда перезапускаем с начала
         function startReading() {
             if (phrases.length === 0) return;
 
-            pauseReading();           // Останавливаем, если что-то уже идёт
-            currentPhraseIndex = 0;   // Сбрасываем на первую фразу
+            pauseReading();
+            currentPhraseIndex = 0;
             isReading = true;
 
             highlightPhrase();
@@ -516,4 +524,4 @@
         };
     </script>
 </body>
-</html> 
+</html>
