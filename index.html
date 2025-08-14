@@ -132,7 +132,7 @@
         .phrase {
             display: inline;
             padding: 0 2px;
-            white-space: normal; /* Теперь перенос работает! */
+            white-space: normal;
             word-wrap: break-word;
             word-break: break-word;
         }
@@ -349,12 +349,24 @@
                     throw new Error('Нет упражнений');
                 }
 
-                const exercise = exercises[Math.floor(Math.random() * exercises.length)];
+                const randomIndex = Math.floor(Math.random() * exercises.length);
+                const exercise = exercises[randomIndex];
+
+                if (!exercise.text || typeof exercise.text !== 'string') {
+                    throw new Error('Упражнение не содержит текста');
+                }
+
                 splitIntoPhrasesWithTiming(exercise.text);
-                renderText(exercise.title);
+
+                // 🔹 Генерация названия с fallback
+                const title = exercise.title 
+                    ? exercise.title.trim() 
+                    : `Упражнение #${randomIndex + 1}`;
+
+                renderText(title);
                 resetState();
 
-                status.textContent = `✅ "${exercise.title}"`;
+                status.textContent = `✅ "${title}"`;
             } catch (err) {
                 document.getElementById('text-container').innerHTML =
                     `<p style="text-align:center; color:#f87171; font-weight:bold;">❌ Ошибка: ${err.message}</p>`;
