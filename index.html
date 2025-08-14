@@ -217,7 +217,7 @@
 
         <div class="speed-info">
             <div class="text">
-                <strong>Группы по 4+ слов</strong> • <span id="speed">Скорость адаптируется</span> слов/мин
+                <strong>Постепенная подсветка слов</strong> • <span id="speed">Скорость адаптируется</span> слов/мин
             </div>
         </div>
 
@@ -239,7 +239,6 @@
         // Настройки
         const SLOW_WPM = 120;
         const FAST_WPM = 200;
-        const MIN_WORDS_PER_GROUP = 4; // Минимум 4 слова в группе
         const WORD_DURATION_BASE = 60 / 1000; // 1 минута / 1000 мс
         const EXERCISES_JSON = 'exercises.json';
 
@@ -269,8 +268,8 @@
                     throw new Error('Упражнение не содержит текста');
                 }
 
-                // Разбиваем на слова и формируем группы
-                splitIntoWordGroups(exercise.text);
+                // Разбиваем на слова
+                splitIntoWords(exercise.text);
                 resetState();
 
             } catch (err) {
@@ -279,39 +278,15 @@
             }
         }
 
-        // Разбивка на группы по минимум 4 слова
-        function splitIntoWordGroups(text) {
+        // Разбивка на слова с сохранением знаков препинания
+        function splitIntoWords(text) {
             // Удаляем лишние пробелы и разбиваем на слова с сохранением знаков препинания
             const allWords = text.trim().split(/\s+/).filter(w => w);
 
-            words = [];
-            let i = 0;
-
-            while (i < allWords.length) {
-                let group = [];
-                const currentSpeed = Math.random() < 0.5 ? SLOW_WPM : FAST_WPM;
-
-                // Собираем минимум 4 слова
-                for (let j = 0; j < MIN_WORDS_PER_GROUP && i < allWords.length; j++) {
-                    group.push({
-                        text: allWords[i],
-                        wpm: currentSpeed
-                    });
-                    i++;
-                }
-
-                // Можно добавить ещё 1–3 слова рандомно
-                const extra = Math.floor(Math.random() * 4); // 0–3 дополнительных слов
-                for (let j = 0; j < extra && i < allWords.length; j++) {
-                    group.push({
-                        text: allWords[i],
-                        wpm: currentSpeed
-                    });
-                    i++;
-                }
-
-                words.push(...group);
-            }
+            words = allWords.map(word => ({
+                text: word,
+                wpm: Math.random() < 0.5 ? SLOW_WPM : FAST_WPM // Случайная скорость для каждого слова
+            }));
 
             // Обновляем отображение скорости
             document.getElementById('speed').textContent = `${SLOW_WPM}–${FAST_WPM}`;
@@ -338,7 +313,7 @@
                 }
             }
 
-            document.getElementById('word-display').innerHTML = highlighted;
+            return highlighted;
         }
 
         function startReading() {
@@ -367,7 +342,15 @@
             }
 
             const word = words[currentWordIndex];
-            displayWord(word);
+            const fullText = words.map((w, idx) => {
+                if (idx === currentWordIndex) {
+                    return `<span class="focus">${displayWord(word)}</span>`;
+                } else {
+                    return w.text;
+                }
+            }).join(' ');
+
+            document.getElementById('word-display').innerHTML = fullText;
 
             const durationMs = (WORD_DURATION_BASE / word.wpm) * 60 * 1000; // мс на слово
             readingTimer = setTimeout(() => {
