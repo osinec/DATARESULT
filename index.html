@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-    <title>📖 Тренажер скорости</title>
+    <title>📖 Скорочтение — Тренажёр</title>
 
     <!-- Подключаем шрифты -->
     <link href="https://fonts.googleapis.com/css2?family=Comfortaa:wght@400;500;600;700&family=Playfair+Display:wght@500;600;700&display=swap" rel="stylesheet">
@@ -279,11 +279,17 @@
 
     <div class="container">
         <header>
-            <h1>📖 Тренажер скорости</h1>
+            <h1>📖 Тренировка скорости</h1>
             <p class="subtitle">
-               Темп постоянно меняется. Адаптируйся"
+               Каждый раз меняется темп - адаптируйся!
             </p>
         </header>
+
+        <div class="speed-info">
+            🎯 <span id="mode">Медленно</span> &nbsp; • &nbsp;
+            <span id="speed">120</span> слов/мин
+        </div>
+
         <div id="text-container" class="text-area">
             <p class="loading">🌀 Загрузка упражнения...</p>
         </div>
@@ -301,7 +307,7 @@
     <script>
         // ⚙️ Настройки
         const SLOW_WPM = 120;             // Медленная скорость
-        const FAST_WPM = 200;             // Быстрая скорость
+        const FAST_WPM = 300;             // Быстрая скорость
         const EXTRA_TIME_SECONDS = 0.3;   // Дополнительное время на фразу
         const phraseDelimiters = /[,.!?;:]/;
         const EXERCISES_JSON = 'exercises.json';
