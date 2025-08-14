@@ -89,7 +89,7 @@
 
         .speed-info .icon {
             font-size: 24px;
-            color: #ff6347; /* Цвет иконки */
+            color: #ff6347;
         }
 
         .speed-info .text {
@@ -324,9 +324,9 @@
 
     <script>
         // ⚙️ Настройки
-        const SLOW_WPM = 120;             // Медленная скорость
-        const FAST_WPM = 200;             // Быстрая скорость
-        const EXTRA_TIME_SECONDS = 0.3;   // Дополнительное время на фразу
+        const SLOW_WPM = 120;
+        const FAST_WPM = 200;
+        const EXTRA_TIME_SECONDS = 0.3;
         const phraseDelimiters = /[,.!?;:]/;
         const EXERCISES_JSON = 'exercises.json';
 
@@ -358,23 +358,12 @@
 
                 splitIntoPhrasesWithTiming(exercise.text);
 
-                // 🔹 Генерация названия с fallback
-                const title = exercise.title 
-                    ? exercise.title.trim() 
-                    : `Упражнение #${randomIndex + 1}`;
-
+                // 🔹 Название: если есть — показываем, если нет — ничего не показываем в статусе
+                const title = exercise.title ? exercise.title.trim() : '';
                 renderText(title);
                 resetState();
 
-                status.textContent = `✅ "${title}"`;
-            } catch (err) {
-                document.getElementById('text-container').innerHTML =
-                    `<p style="text-align:center; color:#f87171; font-weight:bold;">❌ Ошибка: ${err.message}</p>`;
-                status.textContent = 'Ошибка загрузки.';
-            }
-        }
-
-        // Разбивка на фразы с РАНДОМНЫМ выбором режима
+        // Разбивка на фразы с сохранением знаков препинания
         function splitIntoPhrasesWithTiming(text) {
             phrases = [];
             const parts = text.split(phraseDelimiters);
@@ -384,19 +373,18 @@
                 let part = parts[i].trim();
                 if (!part) continue;
 
+                // Полный текст фразы: слово + знак препинания
                 const fullText = part + (i < delimiters.length ? delimiters[i] : '');
-                const words = part.trim().split(/\s+/).filter(w => w);
+                const words = part.split(/\s+/).filter(w => w);
                 const wordCount = words.length;
 
-                // ✅ СЛУЧАЙНЫЙ ВЫБОР: медленно или быстро
-                const isSlow = Math.random() < 0.5; // 50% шанс на каждый режим
-
+                const isSlow = Math.random() < 0.5;
                 const wpm = isSlow ? SLOW_WPM : FAST_WPM;
                 const seconds = (wordCount / wpm) * 60 + EXTRA_TIME_SECONDS;
                 const duration = seconds * 1000;
 
                 phrases.push({
-                    text: fullText,
+                    text: fullText,       // ✅ включает знак препинания
                     isSlow: isSlow,
                     duration: duration,
                     words: words
@@ -404,27 +392,32 @@
             }
         }
 
+        // Отображение текста с сохранением знаков препинания
         function renderText(title) {
             const container = document.getElementById('text-container');
             container.innerHTML = '';
 
-            const titleEl = document.createElement('div');
-            titleEl.className = 'exercise-title';
-            titleEl.style.fontWeight = '600';
-            titleEl.style.fontSize = '1.2em';
-            titleEl.style.marginBottom = '20px';
-            titleEl.style.color = '#a3d9ff';
-            titleEl.textContent = title;
-            container.appendChild(titleEl);
+            // Показываем заголовок, если есть
+            if (title) {
+                const titleEl = document.createElement('div');
+                titleEl.className = 'exercise-title';
+                titleEl.style.fontWeight = '600';
+                titleEl.style.fontSize = '1.2em';
+                titleEl.style.marginBottom = '20px';
+                titleEl.style.color = '#a3d9ff';
+                titleEl.textContent = title;
+                container.appendChild(titleEl);
+            }
 
             phrases.forEach((phrase, idx) => {
                 const containerEl = document.createElement('span');
                 containerEl.className = 'phrase-container';
                 containerEl.dataset.index = idx;
 
+                // ✅ Отображаем весь текст целиком (включая знак препинания)
                 const phraseEl = document.createElement('span');
                 phraseEl.className = 'phrase';
-                phraseEl.innerHTML = phrase.words.map(word => `<span>${word}</span>`).join(' ');
+                phraseEl.textContent = phrase.text;  // Используем textContent для безопасности
 
                 const progressBarOuter = document.createElement('div');
                 progressBarOuter.className = 'progress-bar-outer';
@@ -469,7 +462,6 @@
 
             phrase.classList.add(isSlow ? 'highlight-slow' : 'highlight-fast');
 
-            // Анимация ползунка
             const duration = phrases[currentPhraseIndex].duration;
             bar.style.transition = `width ${duration / 1000}s linear`;
             bar.style.width = '100%';
