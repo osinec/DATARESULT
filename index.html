@@ -363,13 +363,15 @@
         function splitIntoPhrasesWithTiming(text) {
             phrases = [];
             const parts = text.split(phraseDelimiters);
-            const delimiters = text.match(phraseDelimiters) || [];
+            const delimiters = (text.match(new RegExp(`[${phraseDelimiters.source}]`, 'g')) || []);
 
             for (let i = 0; i < parts.length; i++) {
                 let part = parts[i].trim();
                 if (!part) continue;
 
-                const fullText = part + (i < delimiters.length ? delimiters[i] : '');
+                // Сохраняем разделитель, если он есть
+                const delimiter = i < delimiters.length ? delimiters[i] : '';
+                const fullText = part + delimiter;
                 const words = part.split(/\s+/).filter(w => w);
                 const wordCount = words.length;
 
