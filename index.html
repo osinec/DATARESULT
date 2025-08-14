@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-    <title>📖 Тренажер скорости </title>
+    <title>📖 Тренажер скорости</title>
 
     <!-- Подключаем шрифты -->
     <link href="https://fonts.googleapis.com/css2?family=Comfortaa:wght@400;500;600;700&family=Playfair+Display:wght@500;600;700&display=swap" rel="stylesheet">
@@ -61,14 +61,6 @@
             font-weight: 600;
             letter-spacing: -0.5px;
             text-shadow: 0 2px 5px rgba(0,0,0,0.3);
-        }
-
-        .subtitle {
-            font-size: 1.15rem;
-            color: #b8c7e0;
-            max-width: 700px;
-            margin: 0 auto;
-            opacity: 0.9;
         }
 
         .speed-info {
@@ -304,7 +296,7 @@
         <div class="speed-info">
             <div class="icon"><span>🎯</span></div>
             <div class="text">
-                <strong id="mode">Каждый раз темп меняется </strong> • <span id="speed">Адаптируйся</span> слов/мин
+                <strong>Каждый раз темп меняется</strong> • <span id="speed">Адаптируйся</span> слов/мин
             </div>
         </div>
 
@@ -323,7 +315,7 @@
     </div>
 
     <script>
-        // ⚙️ Настройки
+        // Настройки
         const SLOW_WPM = 120;
         const FAST_WPM = 200;
         const EXTRA_TIME_SECONDS = 0.3;
@@ -349,19 +341,27 @@
                     throw new Error('Нет упражнений');
                 }
 
-                const randomIndex = Math.floor(Math.random() * exercises.length);
-                const exercise = exercises[randomIndex];
+                const exercise = exercises[Math.floor(Math.random() * exercises.length)];
 
                 if (!exercise.text || typeof exercise.text !== 'string') {
                     throw new Error('Упражнение не содержит текста');
                 }
 
                 splitIntoPhrasesWithTiming(exercise.text);
-
-                // 🔹 Название: если есть — показываем, если нет — ничего не показываем в статусе
-                const title = exercise.title ? exercise.title.trim() : '';
-                renderText(title);
+                renderText(exercise.title ? exercise.title.trim() : '');
                 resetState();
+
+                if (exercise.title) {
+                    status.textContent = `✅ ${exercise.title}`;
+                } else {
+                    status.textContent = '✅ Готово';
+                }
+            } catch (err) {
+                document.getElementById('text-container').innerHTML =
+                    `<p style="text-align:center; color:#f87171; font-weight:bold;">❌ Ошибка: ${err.message}</p>`;
+                status.textContent = 'Ошибка загрузки.';
+            }
+        }
 
         // Разбивка на фразы с сохранением знаков препинания
         function splitIntoPhrasesWithTiming(text) {
@@ -373,7 +373,6 @@
                 let part = parts[i].trim();
                 if (!part) continue;
 
-                // Полный текст фразы: слово + знак препинания
                 const fullText = part + (i < delimiters.length ? delimiters[i] : '');
                 const words = part.split(/\s+/).filter(w => w);
                 const wordCount = words.length;
@@ -384,7 +383,7 @@
                 const duration = seconds * 1000;
 
                 phrases.push({
-                    text: fullText,       // ✅ включает знак препинания
+                    text: fullText,
                     isSlow: isSlow,
                     duration: duration,
                     words: words
@@ -397,7 +396,6 @@
             const container = document.getElementById('text-container');
             container.innerHTML = '';
 
-            // Показываем заголовок, если есть
             if (title) {
                 const titleEl = document.createElement('div');
                 titleEl.className = 'exercise-title';
@@ -414,10 +412,9 @@
                 containerEl.className = 'phrase-container';
                 containerEl.dataset.index = idx;
 
-                // ✅ Отображаем весь текст целиком (включая знак препинания)
                 const phraseEl = document.createElement('span');
                 phraseEl.className = 'phrase';
-                phraseEl.textContent = phrase.text;  // Используем textContent для безопасности
+                phraseEl.textContent = phrase.text;  // Теперь включает знаки препинания
 
                 const progressBarOuter = document.createElement('div');
                 progressBarOuter.className = 'progress-bar-outer';
