@@ -329,10 +329,11 @@
     </div>
 
     <script>
-        // Настройки
-        const SLOW_WPM = 70;
-        const FAST_WPM = 120;
-        const EXTRA_TIME_SECONDS = 0.4;
+        // Настройки скорости (слов в минуту)
+        const SLOW_WPM = 100;   // 100 слов в минуту
+        const FAST_WPM = 150;   // 150 слов в минуту
+        const EXTRA_TIME_SECONDS = 0.3;  // Дополнительное время на предложение
+
         const SENTENCE_DELIMITERS = /[.!?;:]/;
         const EXERCISES_JSON = 'exercises.json';
 
@@ -373,7 +374,7 @@
             }
         }
 
-        // Только разбиваем на тексты предложений
+        // Разбивка на предложения
         function splitIntoSentences(text) {
             sentenceTexts = [];
             const sentences = text.split(SENTENCE_DELIMITERS).map(s => s.trim()).filter(s => s);
@@ -429,12 +430,13 @@
             document.getElementById('status').textContent = '';
         }
 
-        // Генерация случайной скорости и параметров
-        function generateSpeed() {
+        // Расчёт времени анимации на основе слов
+        function getDurationAndSpeed(text) {
+            const words = text.trim().split(/\s+/).filter(w => w).length;
             const isSlow = Math.random() < 0.5;
             const wpm = isSlow ? SLOW_WPM : FAST_WPM;
-            const duration = ((1 / wpm) * 60 + EXTRA_TIME_SECONDS / 1) * 1000; // ~на одно слово
-            return { isSlow, duration };
+            const durationMs = ((words / wpm) * 60 + EXTRA_TIME_SECONDS) * 1000;
+            return { isSlow, durationMs, words };
         }
 
         function startReading() {
@@ -444,18 +446,21 @@
             currentPhraseIndex = 0;
             isReading = true;
 
-            // Перегенерируем скорость для каждого предложения
             const wrappers = document.querySelectorAll('.phrase-wrapper');
-            wrappers.forEach(wrapper => {
-                const { isSlow, duration } = generateSpeed();
+
+            // Перегенерируем скорость и время для каждого предложения
+            wrappers.forEach((wrapper, idx) => {
+                const text = sentenceTexts[idx];
+                const { isSlow, durationMs } = getDurationAndSpeed(text);
+
                 wrapper.classList.remove('slow', 'fast');
                 wrapper.classList.add(isSlow ? 'slow' : 'fast');
-                wrapper.dataset.duration = duration;
-                wrapper.style.setProperty('--duration', `${duration / 1000}s`);
+                wrapper.dataset.duration = durationMs;
+                wrapper.style.setProperty('--duration', `${durationMs / 1000}s`);
                 wrapper.classList.remove('animate');
             });
 
-            // Запускаем
+            // Запускаем анимацию
             setTimeout(() => {
                 animateNextPhrase();
             }, 10);
