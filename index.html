@@ -73,13 +73,12 @@
             text-shadow: 0 2px 5px rgba(0,0,0,0.3);
         }
 
-        /* =============== ИЗМЕНЕНИЕ: Увеличен шрифт в синей плашке =============== */
         .speed-info {
             background: linear-gradient(90deg, #007bff, #0056b3);
             border-radius: 16px;
             padding: 16px;
             margin: 25px 0;
-            font-size: 1.35rem; /* Увеличено с 1.2rem до 1.35rem */
+            font-size: 1.35rem;
             display: flex;
             flex-direction: column;
             align-items: center;
@@ -95,94 +94,87 @@
         }
 
         .speed-info .text {
-            font-size: 1.05rem; /* Пропорционально увеличен и этот текст */
+            font-size: 1.05rem;
             display: flex;
             align-items: center;
             gap: 8px;
             flex-wrap: wrap;
             justify-content: center;
         }
-        /* ======================================================================= */
 
-        /* =============== ИЗМЕНЕНИЕ: Уменьшен шрифт упражнений =============== */
         .text-area {
-            min-height: 240px;
+            min-height: 300px;
             padding: 30px 20px;
             border-radius: 18px;
             background: rgba(40, 40, 60, 0.6);
             font-family: 'Comfortaa', cursive;
-            font-size: 1.15rem; /* Уменьшено с 1.3rem до 1.15rem — текст упражнения */
-            line-height: 2.1;
+            font-size: 1.15rem;
+            line-height: 2.4; /* Увеличено для чёткого разделения строк */
             text-align: left;
             margin: 25px 0;
             border: 1px solid rgba(100, 150, 255, 0.2);
             box-shadow: inset 0 4px 15px rgba(0, 0, 0, 0.2);
             overflow-y: auto;
-            max-height: 500px;
+            max-height: 600px;
             transition: all 0.3s ease;
             color: #ffffff;
-            word-wrap: break-word;
-            word-break: break-word;
-            hyphens: auto;
         }
-        /* =================================================================== */
 
+        /* === КАЖДОЕ ПРЕДЛОЖЕНИЕ — ОТДЕЛЬНАЯ СТРОКА === */
         .phrase-container {
-            display: inline-block;
-            margin: 0 6px 0 0;
+            display: block; /* Было inline-block → теперь block */
+            margin: 8px 0; /* Вертикальные отступы вместо горизонтальных */
             position: relative;
-            vertical-align: top;
-            max-width: 100%;
+            break-inside: avoid; /* Запрещаем разрыв внутри */
             word-wrap: break-word;
-            word-break: break-word;
         }
 
         .phrase {
             display: inline;
-            padding: 0 1px;
-            white-space: normal;
-            word-wrap: break-word;
-            word-break: break-word;
-            transition: color 0.2s ease;
+            padding: 4px 6px;
+            border-radius: 8px;
+            transition: color 0.2s ease, background 0.2s ease;
         }
 
         .highlight-slow {
-            color: #60a5fa;
+            color: #a3d9ff;
+            background: rgba(96, 165, 250, 0.2);
             font-weight: 700;
-            text-shadow: 0 1px 3px rgba(96, 165, 250, 0.4);
+            text-shadow: 0 1px 2px rgba(0,0,0,0.2);
         }
 
         .highlight-fast {
-            color: #fb923c;
+            color: #fdba74;
+            background: rgba(251, 146, 60, 0.2);
             font-weight: 700;
-            text-shadow: 0 1px 3px rgba(251, 146, 60, 0.4);
+            text-shadow: 0 1px 2px rgba(0,0,0,0.2);
         }
 
+        /* Прогресс-бар под предложением */
         .progress-bar-outer {
             width: 100%;
-            height: 4px;
+            height: 6px;
             background: rgba(255, 255, 255, 0.1);
-            border-radius: 2px;
-            margin-top: 4px;
+            border-radius: 3px;
+            margin-top: 6px;
             overflow: hidden;
-            position: absolute;
-            left: 0;
-            bottom: -8px;
         }
 
         .progress-bar-inner {
             height: 100%;
             width: 0;
-            border-radius: 2px;
+            border-radius: 3px;
             transition: width 0.1s linear;
         }
 
         .highlight-slow + .progress-bar-outer .progress-bar-inner {
             background: #60a5fa;
+            box-shadow: 0 0 8px rgba(96, 165, 250, 0.5);
         }
 
         .highlight-fast + .progress-bar-outer .progress-bar-inner {
             background: #fb923c;
+            box-shadow: 0 0 8px rgba(251, 146, 60, 0.5);
         }
 
         .controls {
@@ -286,25 +278,27 @@
                 font-size: 2rem;
             }
 
-            /* Уменьшен шрифт упражнений на мобильных */
             .text-area {
-                font-size: 1.1rem; /* Ещё чуть меньше на малых экранах */
-                padding: 25px 15px;
-                line-height: 2.0;
+                font-size: 1.1rem;
+                line-height: 2.2;
+                padding: 20px;
             }
 
-            /* Увеличен шрифт в плашке на мобильных */
+            .phrase {
+                padding: 3px 5px;
+            }
+
+            .progress-bar-outer {
+                height: 5px;
+            }
+
             .speed-info {
-                font-size: 1.3rem; /* Адаптивно чуть меньше, но всё ещё крупный */
+                font-size: 1.3rem;
                 padding: 14px 12px;
             }
 
             .speed-info .text {
                 font-size: 1rem;
-            }
-
-            .phrase-container {
-                margin: 0 4px 0 0;
             }
 
             button {
@@ -325,9 +319,9 @@
             }
 
             .text-area {
-                min-height: 180px;
-                font-size: 1.05rem; /* Ещё меньше при малой высоте */
-                padding: 20px;
+                min-height: 200px;
+                font-size: 1.05rem;
+                line-height: 2.0;
             }
 
             button {
@@ -362,7 +356,7 @@
         <div class="controls">
             <button id="btn-start" onclick="startReading()">▶️ Начать</button>
             <button id="btn-pause" onclick="pauseReading()" disabled>⏸️ Пауза</button>
-            <button id="btn-reset" onclick="resetReading()" disabled>🔄 Сброс</button>
+            <button id="btn-reset" onclick="resetReading()">🔄 Сброс</button>
             <button id="btn-next" onclick="loadRandomExercise()">⏭️ Следующее</button>
         </div>
 
@@ -374,7 +368,7 @@
         const SLOW_WPM = 100;
         const FAST_WPM = 150;
         const EXTRA_TIME_SECONDS = 0.3;
-        const MIN_WORDS_PER_PHRASE = 4;
+        const SENTENCE_DELIMITERS = /[.!?;:]/; // Разделители предложений
         const EXERCISES_JSON = 'exercises.json';
 
         let phrases = [];
@@ -401,7 +395,7 @@
                     throw new Error('Упражнение не содержит текста');
                 }
 
-                splitIntoPhrasesWithTiming(exercise.text);
+                splitIntoSentences(exercise.text);
                 renderText(exercise.title ? exercise.title.trim() : '');
                 resetState();
 
@@ -412,54 +406,32 @@
             }
         }
 
-        function splitIntoPhrasesWithTiming(text) {
+        // === РАЗБИВКА ТОЛЬКО ПО ПРЕДЛОЖЕНИЯМ (до точки, восклицательного, вопросительного и т.д.) ===
+        function splitIntoSentences(text) {
             phrases = [];
-            const rawParts = text.split(/([,.!?;:])/);
-            let parts = [];
+            const sentences = text.split(SENTENCE_DELIMITERS).map(s => s.trim()).filter(s => s);
 
-            for (let i = 0; i < rawParts.length; i += 2) {
-                const part = rawParts[i].trim();
-                const delimiter = i + 1 < rawParts.length ? rawParts[i + 1] : '';
-                if (part) {
-                    parts.push({ text: part, delimiter });
-                }
+            const delimiters = text.match(SENTENCE_DELIMITERS) || [];
+
+            for (let i = 0; i < sentences.length; i++) {
+                const sentence = sentences[i];
+                const delimiter = i < delimiters.length ? delimiters[i] : '';
+                const fullSentence = sentence + delimiter;
+                const words = sentence.split(/\s+/).filter(w => w);
+
+                // Определяем скорость случайно
+                const isSlow = Math.random() < 0.5;
+                const wpm = isSlow ? SLOW_WPM : FAST_WPM;
+                const wordCount = words.length;
+                const duration = ((wordCount / wpm) * 60 + EXTRA_TIME_SECONDS) * 1000;
+
+                phrases.push({
+                    text: fullSentence,
+                    isSlow,
+                    duration,
+                    words
+                });
             }
-
-            if (parts.length === 0) return;
-
-            let currentPhrase = '';
-            let currentWords = [];
-
-            for (let i = 0; i < parts.length; i++) {
-                const { text, delimiter } = parts[i];
-                const words = text.split(/\s+/).filter(w => w);
-                currentPhrase += text + delimiter + ' ';
-                currentWords.push(...words);
-
-                if (currentWords.length >= MIN_WORDS_PER_PHRASE && i < parts.length - 1) {
-                    finalizePhrase(currentPhrase.trim(), currentWords);
-                    currentPhrase = '';
-                    currentWords = [];
-                }
-            }
-
-            if (currentPhrase.trim()) {
-                finalizePhrase(currentPhrase.trim(), currentWords);
-            }
-        }
-
-        function finalizePhrase(text, words) {
-            const isSlow = Math.random() < 0.5;
-            const wpm = isSlow ? SLOW_WPM : FAST_WPM;
-            const wordCount = words.length;
-            const duration = ((wordCount / wpm) * 60 + EXTRA_TIME_SECONDS) * 1000;
-
-            phrases.push({
-                text,
-                isSlow,
-                duration,
-                words
-            });
         }
 
         function renderText(title) {
@@ -471,14 +443,14 @@
                 titleEl.className = 'exercise-title';
                 titleEl.style.fontWeight = '600';
                 titleEl.style.fontSize = '1.2em';
-                titleEl.style.marginBottom = '16px';
+                titleEl.style.marginBottom = '20px';
                 titleEl.style.color = '#a3d9ff';
                 titleEl.textContent = title;
                 container.appendChild(titleEl);
             }
 
             phrases.forEach((phrase, idx) => {
-                const containerEl = document.createElement('span');
+                const containerEl = document.createElement('div'); // Было span → теперь div
                 containerEl.className = 'phrase-container';
                 containerEl.dataset.index = idx;
 
@@ -498,7 +470,6 @@
                 containerEl.appendChild(progressBarOuter);
 
                 container.appendChild(containerEl);
-                container.appendChild(document.createTextNode(' '));
             });
         }
 
@@ -506,7 +477,25 @@
             currentPhraseIndex = 0;
             document.getElementById('btn-start').disabled = false;
             document.getElementById('btn-pause').disabled = true;
-            document.getElementById('btn-reset').disabled = true;
+            document.getElementById('btn-reset').disabled = false;
+            document.getElementById('status').textContent = '';
+        }
+
+        // Сброс всех полос прогресса
+        function resetAllProgressBars() {
+            const bars = document.querySelectorAll('.progress-bar-inner');
+            bars.forEach(bar => {
+                bar.style.transition = 'none';
+                bar.style.width = '0%';
+            });
+
+            void document.body.offsetHeight;
+
+            bars.forEach((bar, index) => {
+                if (phrases[index]) {
+                    bar.style.transition = `width ${phrases[index].duration / 1000}s linear`;
+                }
+            });
         }
 
         function highlightPhrase() {
@@ -518,7 +507,13 @@
                 bar.style.width = '0%';
             });
 
-            if (currentPhraseIndex >= containers.length || !isReading) return;
+            if (currentPhraseIndex >= phrases.length || !isReading) {
+                pauseReading();
+                if (currentPhraseIndex >= phrases.length) {
+                    document.getElementById('status').textContent = '✅ Чтение завершено!';
+                }
+                return;
+            }
 
             const container = containers[currentPhraseIndex];
             const phrase = container.querySelector('.phrase');
@@ -526,22 +521,14 @@
             const isSlow = phrases[currentPhraseIndex].isSlow;
 
             phrase.classList.add(isSlow ? 'highlight-slow' : 'highlight-fast');
-
-            const duration = phrases[currentPhraseIndex].duration;
-            bar.style.transition = `width ${duration / 1000}s linear`;
             bar.style.width = '100%';
 
             setTimeout(() => {
                 if (isReading) {
                     currentPhraseIndex++;
-                    if (currentPhraseIndex < phrases.length) {
-                        highlightPhrase();
-                    } else {
-                        pauseReading();
-                        document.getElementById('status').textContent = '✅ Чтение завершено!';
-                    }
+                    highlightPhrase();
                 }
-            }, duration);
+            }, phrases[currentPhraseIndex].duration);
         }
 
         function startReading() {
@@ -551,7 +538,11 @@
             currentPhraseIndex = 0;
             isReading = true;
 
-            highlightPhrase();
+            resetAllProgressBars();
+
+            setTimeout(() => {
+                highlightPhrase();
+            }, 10);
 
             document.getElementById('btn-start').disabled = true;
             document.getElementById('btn-pause').disabled = false;
@@ -562,9 +553,12 @@
         function pauseReading() {
             if (!isReading) return;
             isReading = false;
-            if (document.querySelector('.progress-bar-inner')) {
-                document.querySelector('.progress-bar-inner').style.transition = 'none';
-            }
+
+            const bars = document.querySelectorAll('.progress-bar-inner');
+            bars.forEach(bar => {
+                bar.style.transition = 'none';
+            });
+
             document.getElementById('btn-start').disabled = false;
             document.getElementById('btn-pause').disabled = true;
             document.getElementById('status').textContent = '⏸️ На паузе';
@@ -573,9 +567,7 @@
         function resetReading() {
             pauseReading();
             currentPhraseIndex = 0;
-            highlightPhrase();
-            document.getElementById('btn-start').disabled = false;
-            document.getElementById('btn-reset').disabled = true;
+            resetAllProgressBars();
             document.getElementById('status').textContent = '';
         }
 
