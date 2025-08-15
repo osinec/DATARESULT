@@ -374,7 +374,6 @@
             }
         }
 
-        // Разбивка на предложения
         function splitIntoSentences(text) {
             sentenceTexts = [];
             const sentences = text.split(SENTENCE_DELIMITERS).map(s => s.trim()).filter(s => s);
@@ -448,7 +447,7 @@
 
             const wrappers = document.querySelectorAll('.phrase-wrapper');
 
-            // Перегенерируем скорость и время для каждого предложения
+            // Перегенерируем скорость и время
             wrappers.forEach((wrapper, idx) => {
                 const text = sentenceTexts[idx];
                 const { isSlow, durationMs } = getDurationAndSpeed(text);
@@ -460,7 +459,7 @@
                 wrapper.classList.remove('animate');
             });
 
-            // Запускаем анимацию
+            // Запускаем
             setTimeout(() => {
                 animateNextPhrase();
             }, 10);
@@ -480,9 +479,18 @@
             }
 
             const wrapper = wrappers[currentPhraseIndex];
+            const container = wrapper.parentElement; // .phrase-container
             const duration = parseFloat(wrapper.dataset.duration);
 
+            // Добавляем анимацию
             wrapper.classList.add('animate');
+
+            // 🔽 Автопрокрутка к текущему предложению
+            container.scrollIntoView({
+                behavior: 'smooth',
+                block: 'center',
+                inline: 'nearest'
+            });
 
             animationTimeout = setTimeout(() => {
                 if (isReading) {
