@@ -88,10 +88,6 @@
             border: 1px solid rgba(255, 255, 255, 0.1);
         }
 
-        .speed-info .icon {
-            font-size: 24px;
-        }
-
         .speed-info .text {
             font-size: 1.05rem;
             display: flex;
@@ -99,6 +95,25 @@
             gap: 8px;
             flex-wrap: wrap;
             justify-content: center;
+            font-weight: 600;
+            color: #ffffff;
+        }
+
+        .speed-info .icon {
+            font-size: 1.4em;
+            filter: drop-shadow(0 1px 2px rgba(0,0,0,0.3));
+        }
+
+        .speed-info .tip-text {
+            font-size: 0.95rem;
+            text-align: center;
+            color: #d0f0ff;
+            margin: 8px 0 0;
+            font-style: italic;
+            opacity: 0.95;
+            max-width: 600px;
+            line-height: 1.5;
+            padding: 0 10px;
         }
 
         /* === КНОПКА "ХОЧУ ЕЩЕ" — переливающаяся === */
@@ -168,12 +183,16 @@
             position: relative;
             line-height: 1.2;
             break-inside: avoid;
+            width: 100%;
         }
 
         .phrase-wrapper {
-            display: inline-block;
+            display: block;
             position: relative;
-            vertical-align: top;
+            width: 100%;
+            padding: 6px 10px;
+            border-radius: 8px;
+            line-height: 1.4;
         }
 
         .phrase-wrapper::before {
@@ -199,9 +218,8 @@
             font-weight: 600;
             white-space: pre-wrap;
             word-break: break-word;
-            padding: 6px 10px;
-            border-radius: 8px;
             display: block;
+            z-index: 1;
         }
 
         .phrase-wrapper.slow {
@@ -413,6 +431,10 @@
                 font-size: 1rem;
             }
 
+            .speed-info .tip-text {
+                font-size: 0.9rem;
+            }
+
             button {
                 padding: 16px 20px;
                 font-size: 1.05rem;
@@ -433,9 +455,15 @@
 
         <div class="speed-info">
             <div class="text">
-                <strong>Синий — медленно</strong> • <strong>Оранжевый — быстро</strong>
-             <p> Это упражнение направлено на тренировку скорости речи. При помощи скорости ты можешь делать акцент на чем-то. Когда ты используешь разную скорость - это привлекает внимание!</p>
+                <span class="icon">📘</span>
+                <strong>Синий — медленно</strong> • 
+                <span class="icon">🔥</span>
+                <strong>Оранжевый — быстро</strong>
             </div>
+            <p class="tip-text">
+                Меняйте скорость речи, чтобы выделять важное и держать внимание слушателя. 
+                <em>Контраст — сила оратора!</em>
+            </p>
         </div>
 
         <!-- КНОПКА "ХОЧУ ЕЩЕ" ПОД ПЛАШКОЙ -->
