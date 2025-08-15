@@ -183,13 +183,12 @@
             position: relative;
             line-height: 1.2;
             break-inside: avoid;
-            width: 100%;
         }
 
         .phrase-wrapper {
-            display: block;
+            display: inline-block; /* Ключевое: чтобы ширина была по контенту */
             position: relative;
-            width: 100%;
+            vertical-align: top;
             padding: 6px 10px;
             border-radius: 8px;
             line-height: 1.4;
@@ -219,7 +218,6 @@
             white-space: pre-wrap;
             word-break: break-word;
             display: block;
-            z-index: 1;
         }
 
         .phrase-wrapper.slow {
