@@ -186,7 +186,7 @@
         }
 
         .phrase-wrapper {
-            display: inline-block; /* Ключевое: чтобы ширина была по контенту */
+            display: inline-block;
             position: relative;
             vertical-align: top;
             padding: 6px 10px;
@@ -316,82 +316,16 @@
             min-height: 20px;
         }
 
-        /* МОДАЛЬНОЕ ОКНО */
-        .modal {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
+        /* Стили для ссылки */
+        #btn-more-link {
+            text-decoration: none;
+            display: inline-block;
             width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.7);
-            z-index: 1000;
-            justify-content: center;
-            align-items: center;
         }
 
-        .modal-content {
-            background: rgba(40, 40, 60, 0.95);
-            backdrop-filter: blur(10px);
-            padding: 30px;
-            border-radius: 20px;
-            width: 90%;
-            max-width: 500px;
-            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
-            color: white;
-            border: 1px solid rgba(100, 150, 255, 0.2);
-        }
-
-        .modal h2 {
-            text-align: center;
-            margin-bottom: 20px;
-            color: #a3d9ff;
-        }
-
-        .modal label {
-            display: block;
-            margin: 12px 0 6px;
-            font-weight: 600;
-        }
-
-        .modal input {
+        #btn-more-link button {
             width: 100%;
-            padding: 12px;
-            border-radius: 10px;
-            border: 1px solid rgba(100, 150, 255, 0.3);
-            background: rgba(20, 20, 30, 0.5);
-            color: white;
-            font-family: 'Comfortaa', cursive;
-            font-size: 1rem;
-        }
-
-        .modal button {
-            margin-top: 20px;
-            width: 100%;
-            padding: 14px;
-            font-size: 1.1rem;
-            background: #6366f1;
-            color: white;
-            border: none;
-            border-radius: 10px;
-            cursor: pointer;
-        }
-
-        .modal button:hover {
-            background: #4f46e5;
-        }
-
-        .close-modal {
-            position: absolute;
-            top: 15px;
-            right: 20px;
-            font-size: 24px;
-            color: #aaa;
-            cursor: pointer;
-        }
-
-        .close-modal:hover {
-            color: #fff;
+            margin: 0;
         }
 
         @media (max-width: 480px) {
@@ -466,7 +400,9 @@
 
         <!-- КНОПКА "ХОЧУ ЕЩЕ" ПОД ПЛАШКОЙ -->
         <div class="btn-more-container">
-            <button id="btn-more">✨ Хочу стать еще лучше!</button>
+            <a href="https://t.me/ваш_ник" target="_blank" id="btn-more-link">
+                <button id="btn-more">✨ Хочу стать еще лучше!</button>
+            </a>
         </div>
 
         <div id="text-container" class="text-area">
@@ -483,36 +419,7 @@
         <div id="status" class="status"></div>
     </div>
 
-    <!-- Модальное окно -->
-    <div id="modal" class="modal">
-        <div class="modal-content">
-            <span class="close-modal" onclick="closeModal()">&times;</span>
-            <h2>🌟 Хочу еще упражнения!</h2>
-            <p style="text-align: center; margin-bottom: 20px; color: #ccc;">
-                Оставьте свои данные — пришлю больше тренажёров и упражнений
-            </p>
-            <form id="contact-form" onsubmit="sendToTelegram(event)">
-                <label>Имя</label>
-                <input type="text" id="name" placeholder="Ваше имя" required />
-
-                <label>Telegram (@ник)</label>
-                <input type="text" id="telegram" placeholder="@username" required />
-
-                <label>Телефон</label>
-                <input type="tel" id="phone" placeholder="+7 (999) 123-45-67" />
-
-                <button type="submit">📩 Отправить</button>
-            </form>
-        </div>
-    </div>
-
     <script>
-        // ========= НАСТРОЙКИ ТЕЛЕГРАМ =========
-        const TELEGRAM_BOT_TOKEN = '8344168861:AAEl_ZEXiKEDKzOS_novnMsqDzJ2JgM6WH0'; // ← Заменить
-        const TELEGRAM_CHAT_ID = '402109857';     // ← Заменить
-        // Пример: '123456789:AAF...' и '987654321'
-        // ======================================
-
         // Настройки скорости
         const SLOW_WPM = 100;
         const FAST_WPM = 200;
@@ -695,52 +602,7 @@
             document.getElementById('status').textContent = '';
         }
 
-        // === МОДАЛЬНОЕ ОКНО ===
-        function showModal() {
-            document.getElementById('modal').style.display = 'flex';
-        }
-
-        function closeModal() {
-            document.getElementById('modal').style.display = 'none';
-        }
-
-        function sendToTelegram(e) {
-            e.preventDefault();
-            const name = document.getElementById('name').value.trim();
-            const telegram = document.getElementById('telegram').value.trim();
-            const phone = document.getElementById('phone').value.trim() || 'Не указан';
-
-            const message = `
-🌟 <b>Новый запрос: Хочу еще!</b>
-▫️ Имя: ${name}
-▫️ Telegram: ${telegram}
-▫️ Телефон: ${phone}
-⏱️ Время: ${new Date().toLocaleString('ru-RU')}
-            `.trim();
-
-            fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({
-                    chat_id: TELEGRAM_CHAT_ID,
-                    text: message,
-                    parse_mode: 'HTML'
-                })
-            })
-            .then(() => {
-                alert('Спасибо! Данные отправлены. Скоро свяжусь с вами.');
-                document.getElementById('contact-form').reset();
-                closeModal();
-            })
-            .catch(err => {
-                console.error('Ошибка отправки:', err);
-                alert('Ошибка отправки. Попробуйте позже или напишите вручную.');
-            });
-        }
-
-        // === Обработчики событий ===
+        // === Инициализация ===
         window.onload = () => {
             loadRandomExercise();
 
@@ -748,7 +610,8 @@
             document.getElementById('btn-pause').onclick = pauseReading;
             document.getElementById('btn-reset').onclick = resetReading;
             document.getElementById('btn-next').onclick = loadRandomExercise;
-            document.getElementById('btn-more').onclick = showModal;
+
+            // Кнопка "Хочу ещё" — просто ссылка, обработчик не нужен
         };
     </script>
 </body>
