@@ -101,6 +101,47 @@
             justify-content: center;
         }
 
+        /* === КНОПКА "ХОЧУ ЕЩЕ" — переливающаяся === */
+        .btn-more-container {
+            text-align: center;
+            margin: 15px 0 25px;
+        }
+
+        #btn-more {
+            font-family: 'Comfortaa', cursive;
+            font-weight: 600;
+            font-size: 1.15rem;
+            padding: 16px 30px;
+            border-radius: 16px;
+            border: none;
+            cursor: pointer;
+            background: linear-gradient(45deg, #3b82f6, #8b5cf6, #06b6d4, #3b82f6);
+            background-size: 300% 300%;
+            color: white;
+            box-shadow: 0 6px 20px rgba(59, 130, 246, 0.4);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            position: relative;
+            overflow: hidden;
+            animation: gradient-flow 4s ease infinite;
+            min-width: 220px;
+        }
+
+        #btn-more:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(59, 130, 246, 0.6);
+        }
+
+        #btn-more:active {
+            transform: translateY(1px);
+        }
+
+        @keyframes gradient-flow {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        /* === ОСНОВНОЙ ТЕКСТ УПРАЖНЕНИЯ === */
         .text-area {
             min-height: 300px;
             padding: 30px 20px;
@@ -248,19 +289,6 @@
             box-shadow: 0 10px 25px rgba(79, 70, 229, 0.4);
         }
 
-        /* КНОПКА "ХОЧУ ЕЩЕ" */
-        #btn-more {
-            background: #ec4899;
-            color: white;
-            font-weight: 600;
-        }
-
-        #btn-more:hover:not(:disabled) {
-            background: #db2777;
-            transform: translateY(-4px);
-            box-shadow: 0 10px 25px rgba(219, 39, 119, 0.4);
-        }
-
         .status {
             font-family: 'Comfortaa', cursive;
             text-align: center;
@@ -326,6 +354,15 @@
             width: 100%;
             padding: 14px;
             font-size: 1.1rem;
+            background: #6366f1;
+            color: white;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+        }
+
+        .modal button:hover {
+            background: #4f46e5;
         }
 
         .close-modal {
@@ -350,6 +387,11 @@
 
             h1 {
                 font-size: 2rem;
+            }
+
+            #btn-more {
+                font-size: 1.05rem;
+                padding: 15px 24px;
             }
 
             .text-area {
@@ -396,6 +438,11 @@
             </div>
         </div>
 
+        <!-- КНОПКА "ХОЧУ ЕЩЕ" ПОД ПЛАШКОЙ -->
+        <div class="btn-more-container">
+            <button id="btn-more">✨ Хочу еще упражнения!</button>
+        </div>
+
         <div id="text-container" class="text-area">
             <!-- Текст загружается динамически -->
         </div>
@@ -405,7 +452,6 @@
             <button id="btn-pause" disabled>⏸️ Пауза</button>
             <button id="btn-reset">🔄 Сброс</button>
             <button id="btn-next">⏭️ Следующее</button>
-            <button id="btn-more">🌟 Хочу еще</button>
         </div>
 
         <div id="status" class="status"></div>
@@ -415,7 +461,7 @@
     <div id="modal" class="modal">
         <div class="modal-content">
             <span class="close-modal" onclick="closeModal()">&times;</span>
-            <h2>Хочу еще упражнения!</h2>
+            <h2>🌟 Хочу еще упражнения!</h2>
             <p style="text-align: center; margin-bottom: 20px; color: #ccc;">
                 Оставьте свои данные — пришлю больше тренажёров и упражнений
             </p>
@@ -429,7 +475,7 @@
                 <label>Телефон (опционально)</label>
                 <input type="tel" id="phone" placeholder="+7 (999) 123-45-67" />
 
-                <button type="submit" style="background:#6366f1">📩 Отправить</button>
+                <button type="submit">📩 Отправить</button>
             </form>
         </div>
     </div>
@@ -453,7 +499,6 @@
         let isReading = false;
         let animationTimeout = null;
 
-        // === Загрузка упражнения ===
         async function loadRandomExercise() {
             pauseReading();
             const status = document.getElementById('status');
@@ -647,7 +692,6 @@
 ⏱️ Время: ${new Date().toLocaleString('ru-RU')}
             `.trim();
 
-            // Отправка в Telegram
             fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`, {
                 method: 'POST',
                 headers: {
