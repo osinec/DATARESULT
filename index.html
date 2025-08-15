@@ -120,7 +120,6 @@
             flex-direction: column;
         }
 
-        /* === КОНТЕЙНЕР ДЛЯ ОДНОГО ПРЕДЛОЖЕНИЯ === */
         .phrase-container {
             display: block;
             margin: 12px 0;
@@ -136,7 +135,6 @@
             vertical-align: top;
         }
 
-        /* Псевдоэлемент — анимированный фон */
         .phrase-wrapper::before {
             content: '';
             position: absolute;
@@ -150,7 +148,6 @@
             transition: none;
         }
 
-        /* Анимация через JS: добавляем класс */
         .phrase-wrapper.animate::before {
             width: 100%;
             transition: width var(--duration) linear;
@@ -166,7 +163,6 @@
             display: block;
         }
 
-        /* Цвета */
         .phrase-wrapper.slow {
             --text-color: #a3d9ff;
             --bg-color: rgba(96, 165, 250, 0.4);
@@ -335,12 +331,13 @@
     <script>
         // Настройки
         const SLOW_WPM = 100;
-        const FAST_WPM = 200;
+        const FAST_WPM = 150;
         const EXTRA_TIME_SECONDS = 0.3;
         const SENTENCE_DELIMITERS = /[.!?;:]/;
         const EXERCISES_JSON = 'exercises.json';
 
-        let phrases = [];
+        // Хранит только текст предложений
+        let sentenceTexts = [];
         let currentPhraseIndex = 0;
         let isReading = false;
         let animationTimeout = null;
@@ -376,8 +373,9 @@
             }
         }
 
+        // Только разбиваем на тексты предложений
         function splitIntoSentences(text) {
-            phrases = [];
+            sentenceTexts = [];
             const sentences = text.split(SENTENCE_DELIMITERS).map(s => s.trim()).filter(s => s);
             const delimiters = text.match(SENTENCE_DELIMITERS) || [];
 
@@ -385,19 +383,7 @@
                 const sentence = sentences[i];
                 const delimiter = i < delimiters.length ? delimiters[i] : '';
                 const fullSentence = sentence + delimiter;
-                const words = sentence.split(/\s+/).filter(w => w);
-
-                const isSlow = Math.random() < 0.5;
-                const wpm = isSlow ? SLOW_WPM : FAST_WPM;
-                const wordCount = words.length;
-                const duration = ((wordCount / wpm) * 60 + EXTRA_TIME_SECONDS) * 1000;
-
-                phrases.push({
-                    text: fullSentence,
-                    isSlow,
-                    duration,
-                    words
-                });
+                sentenceTexts.push(fullSentence);
             }
         }
 
@@ -416,23 +402,18 @@
                 container.appendChild(titleEl);
             }
 
-            phrases.forEach((phrase, idx) => {
+            sentenceTexts.forEach((text, idx) => {
                 const containerEl = document.createElement('div');
                 containerEl.className = 'phrase-container';
                 containerEl.dataset.index = idx;
 
                 const wrapper = document.createElement('div');
                 wrapper.className = 'phrase-wrapper';
-                if (phrase.isSlow) {
-                    wrapper.classList.add('slow');
-                } else {
-                    wrapper.classList.add('fast');
-                }
-                wrapper.dataset.duration = phrase.duration;
+                wrapper.dataset.index = idx;
 
                 const phraseEl = document.createElement('span');
                 phraseEl.className = 'phrase';
-                phraseEl.textContent = phrase.text;
+                phraseEl.textContent = text;
 
                 wrapper.appendChild(phraseEl);
                 containerEl.appendChild(wrapper);
@@ -448,17 +429,30 @@
             document.getElementById('status').textContent = '';
         }
 
+        // Генерация случайной скорости и параметров
+        function generateSpeed() {
+            const isSlow = Math.random() < 0.5;
+            const wpm = isSlow ? SLOW_WPM : FAST_WPM;
+            const duration = ((1 / wpm) * 60 + EXTRA_TIME_SECONDS / 1) * 1000; // ~на одно слово
+            return { isSlow, duration };
+        }
+
         function startReading() {
-            if (phrases.length === 0) return;
+            if (sentenceTexts.length === 0) return;
 
             pauseReading();
             currentPhraseIndex = 0;
             isReading = true;
 
-            // Сбрасываем анимации
-            document.querySelectorAll('.phrase-wrapper').forEach(el => {
-                el.classList.remove('animate');
-                el.style.setProperty('--duration', '0s');
+            // Перегенерируем скорость для каждого предложения
+            const wrappers = document.querySelectorAll('.phrase-wrapper');
+            wrappers.forEach(wrapper => {
+                const { isSlow, duration } = generateSpeed();
+                wrapper.classList.remove('slow', 'fast');
+                wrapper.classList.add(isSlow ? 'slow' : 'fast');
+                wrapper.dataset.duration = duration;
+                wrapper.style.setProperty('--duration', `${duration / 1000}s`);
+                wrapper.classList.remove('animate');
             });
 
             // Запускаем
@@ -468,6 +462,7 @@
 
             document.getElementById('btn-start').disabled = true;
             document.getElementById('btn-pause').disabled = false;
+            document.getElementById('btn-reset').disabled = false;
             document.getElementById('status').textContent = '▶️ Чтение начато...';
         }
 
@@ -480,9 +475,8 @@
             }
 
             const wrapper = wrappers[currentPhraseIndex];
-            const durationMs = phrases[currentPhraseIndex].duration;
+            const duration = parseFloat(wrapper.dataset.duration);
 
-            wrapper.style.setProperty('--duration', `${durationMs / 1000}s`);
             wrapper.classList.add('animate');
 
             animationTimeout = setTimeout(() => {
@@ -490,7 +484,7 @@
                     currentPhraseIndex++;
                     animateNextPhrase();
                 }
-            }, durationMs);
+            }, duration);
         }
 
         function pauseReading() {
