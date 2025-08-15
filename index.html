@@ -2,7 +2,12 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <meta name="theme-color" content="#1e2024" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+
     <title>📖 Тренажер скорости</title>
 
     <!-- Подключаем шрифты -->
@@ -13,6 +18,7 @@
             margin: 0;
             padding: 0;
             box-sizing: border-box;
+            touch-action: manipulation; /* Улучшает отклик на тач-устройствах */
         }
 
         body {
@@ -23,6 +29,9 @@
             color: #e0e0e0;
             line-height: 1.7;
             overflow-x: hidden;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+            text-rendering: optimizeLegibility;
         }
 
         body::before {
@@ -38,24 +47,25 @@
 
         .container {
             max-width: 960px;
-            margin: 40px auto;
-            background: rgba(30, 30, 40, 0.85);
+            margin: 20px auto;
+            background: rgba(30, 30, 40, 0.9);
             backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px); /* Для Safari */
             border-radius: 22px;
             box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
-            padding: 45px;
+            padding: 25px;
             border: 1px solid rgba(100, 100, 150, 0.2);
             color: #ffffff;
         }
 
         header {
             text-align: center;
-            margin-bottom: 30px;
+            margin-bottom: 25px;
         }
 
         h1 {
             font-family: 'Playfair Display', serif;
-            font-size: 3rem;
+            font-size: 2.5rem;
             color: #a3d9ff;
             margin-bottom: 12px;
             font-weight: 600;
@@ -66,13 +76,13 @@
         .speed-info {
             background: linear-gradient(90deg, #007bff, #0056b3);
             border-radius: 16px;
-            padding: 20px;
-            margin: 30px 0;
-            font-size: 1.3rem;
+            padding: 16px;
+            margin: 25px 0;
+            font-size: 1.2rem;
             display: flex;
-            justify-content: center;
+            flex-direction: column;
             align-items: center;
-            gap: 20px;
+            gap: 10px;
             font-weight: 600;
             box-shadow: 0 6px 20px rgba(0, 50, 100, 0.4);
             color: #ffffff;
@@ -81,23 +91,25 @@
 
         .speed-info .icon {
             font-size: 24px;
-            color: #ff6347;
         }
 
         .speed-info .text {
+            font-size: 0.95rem;
             display: flex;
             align-items: center;
-            gap: 10px;
+            gap: 8px;
+            flex-wrap: wrap;
+            justify-content: center;
         }
 
         .text-area {
             min-height: 240px;
-            padding: 35px;
+            padding: 30px 20px;
             border-radius: 18px;
             background: rgba(40, 40, 60, 0.6);
             font-family: 'Comfortaa', cursive;
-            font-size: 20px;
-            line-height: 2.2;
+            font-size: 1.3rem; /* Увеличенный размер шрифта */
+            line-height: 2.1;
             text-align: left;
             margin: 25px 0;
             border: 1px solid rgba(100, 150, 255, 0.2);
@@ -113,7 +125,7 @@
 
         .phrase-container {
             display: inline-block;
-            margin: 0 8px;
+            margin: 0 6px 0 0;
             position: relative;
             vertical-align: top;
             max-width: 100%;
@@ -123,27 +135,25 @@
 
         .phrase {
             display: inline;
-            padding: 0 2px;
+            padding: 0 1px;
             white-space: normal;
             word-wrap: break-word;
             word-break: break-word;
             transition: color 0.2s ease;
         }
 
-        /* Подсветка через цвет текста */
         .highlight-slow {
-            color: #60a5fa; /* Синий */
+            color: #60a5fa;
             font-weight: 700;
             text-shadow: 0 1px 3px rgba(96, 165, 250, 0.4);
         }
 
         .highlight-fast {
-            color: #fb923c; /* Оранжевый */
+            color: #fb923c;
             font-weight: 700;
             text-shadow: 0 1px 3px rgba(251, 146, 60, 0.4);
         }
 
-        /* Прогресс-бар под текстом */
         .progress-bar-outer {
             width: 100%;
             height: 4px;
@@ -153,7 +163,7 @@
             overflow: hidden;
             position: absolute;
             left: 0;
-            bottom: -10px;
+            bottom: -8px;
         }
 
         .progress-bar-inner {
@@ -173,20 +183,26 @@
 
         .controls {
             text-align: center;
-            margin: 35px 0 20px;
+            margin: 30px 0 15px;
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 12px;
         }
 
         button {
             font-family: 'Comfortaa', cursive;
-            padding: 15px 28px;
-            font-size: 17px;
+            padding: 16px 24px;
+            font-size: 1.1rem;
             font-weight: 600;
-            margin: 0 12px;
             cursor: pointer;
             border: none;
             border-radius: 14px;
             transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
             box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+            flex: 1 1 auto;
+            min-width: 120px;
+            white-space: nowrap;
         }
 
         button:disabled {
@@ -201,7 +217,8 @@
             color: #1a1a2e;
         }
 
-        #btn-start:hover:not(:disabled) {
+        #btn-start:hover:not(:disabled),
+        #btn-start:active:not(:disabled) {
             background: #22c55e;
             transform: translateY(-4px);
             box-shadow: 0 10px 25px rgba(34, 197, 94, 0.4);
@@ -212,7 +229,8 @@
             color: #1a1a2e;
         }
 
-        #btn-pause:hover:not(:disabled) {
+        #btn-pause:hover:not(:disabled),
+        #btn-pause:active:not(:disabled) {
             background: #f97316;
             transform: translateY(-4px);
             box-shadow: 0 10px 25px rgba(249, 115, 22, 0.4);
@@ -223,7 +241,8 @@
             color: white;
         }
 
-        #btn-reset:hover:not(:disabled) {
+        #btn-reset:hover:not(:disabled),
+        #btn-reset:active:not(:disabled) {
             background: #4b5563;
             transform: translateY(-4px);
             box-shadow: 0 10px 25px rgba(75, 85, 99, 0.4);
@@ -234,7 +253,8 @@
             color: white;
         }
 
-        #btn-next:hover:not(:disabled) {
+        #btn-next:hover:not(:disabled),
+        #btn-next:active:not(:disabled) {
             background: #4f46e5;
             transform: translateY(-4px);
             box-shadow: 0 10px 25px rgba(79, 70, 229, 0.4);
@@ -243,7 +263,7 @@
         .status {
             font-family: 'Comfortaa', cursive;
             text-align: center;
-            font-size: 15px;
+            font-size: 1rem;
             color: #a0aec0;
             margin-top: 15px;
             font-style: italic;
@@ -251,25 +271,72 @@
             min-height: 20px;
         }
 
-        @media (max-width: 768px) {
+        /* Мобильные улучшения */
+        @media (max-width: 480px) {
             .container {
-                margin: 20px 15px;
-                padding: 25px;
+                margin: 15px;
+                padding: 20px;
+                border-radius: 16px;
+            }
+
+            h1 {
+                font-size: 2rem;
             }
 
             .text-area {
-                font-size: 16px;
-                line-height: 1.8;
+                font-size: 1.4rem;
+                padding: 25px 15px;
+                line-height: 2.0;
+            }
+
+            .phrase-container {
+                margin: 0 4px 0 0;
             }
 
             .phrase {
-                margin: 0 6px;
+                padding: 0 1px;
             }
 
             button {
+                padding: 16px 20px;
+                font-size: 1.05rem;
+                min-width: 110px;
+            }
+
+            .controls {
+                gap: 10px;
+            }
+
+            .speed-info {
+                font-size: 1.1rem;
+                padding: 14px 12px;
+            }
+
+            .speed-info .text {
+                font-size: 0.9rem;
+            }
+        }
+
+        /* Портрет на очень маленьких экранах */
+        @media (max-height: 600px) and (orientation: portrait) {
+            .container {
                 margin: 10px;
-                padding: 14px 22px;
-                font-size: 16px;
+                padding: 15px;
+            }
+
+            .text-area {
+                min-height: 180px;
+                font-size: 1.25rem;
+                padding: 20px;
+            }
+
+            button {
+                padding: 14px 18px;
+                font-size: 0.95rem;
+            }
+
+            .controls {
+                gap: 8px;
             }
         }
     </style>
@@ -282,9 +349,9 @@
         </header>
 
         <div class="speed-info">
-            <div class="icon"><span>🎯</span></div>
+            <div class="icon">🎯</div>
             <div class="text">
-                <strong>Синий - медленный темп</strong> • <span id="speed">Оранжевый - быстрый</span>
+                <strong>Синий — медленно</strong> • <strong>Оранжевый — быстро</strong>
             </div>
         </div>
 
@@ -307,18 +374,17 @@
         const SLOW_WPM = 100;
         const FAST_WPM = 150;
         const EXTRA_TIME_SECONDS = 0.3;
-        const MIN_WORDS_PER_PHRASE = 4; // Минимум 4 слова в фразе
+        const MIN_WORDS_PER_PHRASE = 4;
         const EXERCISES_JSON = 'exercises.json';
 
         let phrases = [];
         let currentPhraseIndex = 0;
         let isReading = false;
 
-        // Загрузка случайного упражнения
         async function loadRandomExercise() {
             pauseReading();
             const status = document.getElementById('status');
-            status.textContent = ''; // Очистка статуса
+            status.textContent = '';
 
             try {
                 const response = await fetch(EXERCISES_JSON + '?v=' + Date.now());
@@ -346,13 +412,11 @@
             }
         }
 
-        // Разбивка на фразы с минимум 4 словами
         function splitIntoPhrasesWithTiming(text) {
             phrases = [];
-            const rawParts = text.split(/([,.!?;:])/); // Разделяем с сохранением разделителей
+            const rawParts = text.split(/([,.!?;:])/);
             let parts = [];
 
-            // Собираем части с разделителями
             for (let i = 0; i < rawParts.length; i += 2) {
                 const part = rawParts[i].trim();
                 const delimiter = i + 1 < rawParts.length ? rawParts[i + 1] : '';
@@ -372,7 +436,6 @@
                 currentPhrase += text + delimiter + ' ';
                 currentWords.push(...words);
 
-                // Если уже набрали 4+ слов и это не последняя часть — фиксируем фразу
                 if (currentWords.length >= MIN_WORDS_PER_PHRASE && i < parts.length - 1) {
                     finalizePhrase(currentPhrase.trim(), currentWords);
                     currentPhrase = '';
@@ -380,7 +443,6 @@
                 }
             }
 
-            // Добавляем остаток (даже если <4 слов)
             if (currentPhrase.trim()) {
                 finalizePhrase(currentPhrase.trim(), currentWords);
             }
@@ -396,11 +458,10 @@
                 text,
                 isSlow,
                 duration,
-                words: words
+                words
             });
         }
 
-        // Отображение текста
         function renderText(title) {
             const container = document.getElementById('text-container');
             container.innerHTML = '';
@@ -410,7 +471,7 @@
                 titleEl.className = 'exercise-title';
                 titleEl.style.fontWeight = '600';
                 titleEl.style.fontSize = '1.2em';
-                titleEl.style.marginBottom = '20px';
+                titleEl.style.marginBottom = '16px';
                 titleEl.style.color = '#a3d9ff';
                 titleEl.textContent = title;
                 container.appendChild(titleEl);
@@ -518,7 +579,6 @@
             document.getElementById('status').textContent = '';
         }
 
-        // Загрузка при старте
         window.onload = () => {
             loadRandomExercise();
         };
