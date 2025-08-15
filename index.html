@@ -108,7 +108,7 @@
             background: rgba(40, 40, 60, 0.6);
             font-family: 'Comfortaa', cursive;
             font-size: 1.15rem;
-            line-height: 2.4;
+            line-height: 2.8;
             text-align: left;
             margin: 25px 0;
             border: 1px solid rgba(100, 150, 255, 0.2);
@@ -116,66 +116,65 @@
             overflow-y: auto;
             max-height: 600px;
             color: #ffffff;
+            display: flex;
+            flex-direction: column;
         }
 
-        /* === КАЖДОЕ ПРЕДЛОЖЕНИЕ — ОТДЕЛЬНАЯ СТРОКА С АНИМИРОВАННЫМ ФОНОМ === */
+        /* === КОНТЕЙНЕР ДЛЯ ОДНОГО ПРЕДЛОЖЕНИЯ === */
         .phrase-container {
             display: block;
-            margin: 10px 0;
-            padding: 8px 12px;
-            border-radius: 10px;
-            background: transparent;
+            margin: 12px 0;
+            padding: 0;
             position: relative;
-            overflow: hidden;
-            word-wrap: break-word;
+            line-height: 1.2;
             break-inside: avoid;
-            /* Градиентный фон для анимации */
-            background-image: linear-gradient(
-                to right,
-                var(--bg-start, #0000),
-                var(--bg-end, #0000)
-            );
-            background-size: 0% 100%;
-            background-repeat: no-repeat;
-            background-position: left;
         }
 
-        /* Анимация фона */
-        .phrase-container.animated {
-            animation: progress-fill var(--duration) linear forwards;
-        }
-
-        @keyframes progress-fill {
-            from {
-                background-size: 0% 100%;
-            }
-            to {
-                background-size: 100% 100%;
-            }
-        }
-
-        /* Текст внутри */
-        .phrase {
+        .phrase-wrapper {
+            display: inline-block;
             position: relative;
-            z-index: 2;
-            color: inherit;
+            vertical-align: top;
+        }
+
+        /* Псевдоэлемент — анимированный фон */
+        .phrase-wrapper::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            height: 100%;
+            width: 0;
+            border-radius: 8px;
+            background: var(--bg-color);
+            z-index: -1;
+            transition: none;
+        }
+
+        /* Анимация через JS: добавляем класс */
+        .phrase-wrapper.animate::before {
+            width: 100%;
+            transition: width var(--duration) linear;
+        }
+
+        .phrase {
+            color: var(--text-color);
             font-weight: 600;
-            display: block;
             white-space: pre-wrap;
             word-break: break-word;
+            padding: 6px 10px;
+            border-radius: 8px;
+            display: block;
         }
 
-        /* Медленный — синий, быстрый — оранжевый */
-        .phrase-container.slow {
-            --bg-start: rgba(96, 165, 250, 0.1);
-            --bg-end: rgba(96, 165, 250, 0.6);
-            color: #a3d9ff;
+        /* Цвета */
+        .phrase-wrapper.slow {
+            --text-color: #a3d9ff;
+            --bg-color: rgba(96, 165, 250, 0.4);
         }
 
-        .phrase-container.fast {
-            --bg-start: rgba(251, 146, 60, 0.1);
-            --bg-end: rgba(251, 146, 60, 0.6);
-            color: #fdba74;
+        .phrase-wrapper.fast {
+            --text-color: #fdba74;
+            --bg-color: rgba(251, 146, 60, 0.4);
         }
 
         .controls {
@@ -277,13 +276,12 @@
 
             .text-area {
                 font-size: 1.1rem;
-                line-height: 2.2;
+                line-height: 2.5;
                 padding: 20px;
             }
 
-            .phrase-container {
-                padding: 6px 10px;
-                margin: 8px 0;
+            .phrase {
+                padding: 5px 8px;
             }
 
             .speed-info {
@@ -422,20 +420,22 @@
                 const containerEl = document.createElement('div');
                 containerEl.className = 'phrase-container';
                 containerEl.dataset.index = idx;
-                containerEl.dataset.duration = phrase.duration;
 
-                // Устанавливаем классы и переменные
+                const wrapper = document.createElement('div');
+                wrapper.className = 'phrase-wrapper';
                 if (phrase.isSlow) {
-                    containerEl.classList.add('slow');
+                    wrapper.classList.add('slow');
                 } else {
-                    containerEl.classList.add('fast');
+                    wrapper.classList.add('fast');
                 }
+                wrapper.dataset.duration = phrase.duration;
 
                 const phraseEl = document.createElement('span');
                 phraseEl.className = 'phrase';
                 phraseEl.textContent = phrase.text;
 
-                containerEl.appendChild(phraseEl);
+                wrapper.appendChild(phraseEl);
+                containerEl.appendChild(wrapper);
                 container.appendChild(containerEl);
             });
         }
@@ -448,7 +448,6 @@
             document.getElementById('status').textContent = '';
         }
 
-        // === ОСНОВНАЯ ФУНКЦИЯ: ЗАПУСК АНИМАЦИИ ===
         function startReading() {
             if (phrases.length === 0) return;
 
@@ -456,14 +455,13 @@
             currentPhraseIndex = 0;
             isReading = true;
 
-            // Убираем все анимации
-            const containers = document.querySelectorAll('.phrase-container');
-            containers.forEach(el => {
-                el.classList.remove('animated');
+            // Сбрасываем анимации
+            document.querySelectorAll('.phrase-wrapper').forEach(el => {
+                el.classList.remove('animate');
                 el.style.setProperty('--duration', '0s');
             });
 
-            // Даём время на сброс
+            // Запускаем
             setTimeout(() => {
                 animateNextPhrase();
             }, 10);
@@ -474,19 +472,18 @@
         }
 
         function animateNextPhrase() {
-            const containers = document.querySelectorAll('.phrase-container');
-            if (currentPhraseIndex >= containers.length || !isReading) {
+            const wrappers = document.querySelectorAll('.phrase-wrapper');
+            if (currentPhraseIndex >= wrappers.length || !isReading) {
                 pauseReading();
                 document.getElementById('status').textContent = '✅ Чтение завершено!';
                 return;
             }
 
-            const container = containers[currentPhraseIndex];
+            const wrapper = wrappers[currentPhraseIndex];
             const durationMs = phrases[currentPhraseIndex].duration;
 
-            // Устанавливаем длительность анимации
-            container.style.setProperty('--duration', `${durationMs / 1000}s`);
-            container.classList.add('animated');
+            wrapper.style.setProperty('--duration', `${durationMs / 1000}s`);
+            wrapper.classList.add('animate');
 
             animationTimeout = setTimeout(() => {
                 if (isReading) {
@@ -512,9 +509,8 @@
 
         function resetReading() {
             pauseReading();
-            const containers = document.querySelectorAll('.phrase-container');
-            containers.forEach(el => {
-                el.classList.remove('animated');
+            document.querySelectorAll('.phrase-wrapper').forEach(el => {
+                el.classList.remove('animate');
             });
             currentPhraseIndex = 0;
             document.getElementById('status').textContent = '';
