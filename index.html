@@ -156,15 +156,14 @@
             z-index: 2;
         }
 
-        /* === ЯРКАЯ ПОЛОСА ПРОГРЕССА (ВИДИМАЯ И КРАСИВАЯ) === */
+        /* === ЯРКАЯ ПОЛОСА ПРОГРЕССА === */
         .speed-instruction {
             position: relative;
             width: 100%;
-            height: 10px; /* Увеличена для лучшей видимости */
+            height: 10px;
             margin: 25px 0 10px;
             border-radius: 5px;
             overflow: hidden;
-            /* Теперь это НЕ прозрачное подсказочное поле — а основная полоса прогресса */
             box-shadow: 0 2px 8px rgba(0,0,0,0.1);
             z-index: 1;
         }
@@ -175,7 +174,7 @@
             left: 0;
             height: 100%;
             width: 0%;
-            background: linear-gradient(90deg, #6366f1, #f59e0b); /* Яркий градиент */
+            background: linear-gradient(90deg, #6366f1, #f59e0b);
             border-radius: 5px;
             transition: width 0.1s linear;
             z-index: 2;
@@ -183,7 +182,6 @@
             box-shadow: inset 0 1px 3px rgba(0,0,0,0.2);
         }
 
-        /* Метки под полосой — тонкие, но видимые */
         .speed-instruction .label-slow,
         .speed-instruction .label-fast {
             position: absolute;
@@ -486,7 +484,7 @@
             <!-- Здесь будет отображаться одно предложение -->
         </div>
 
-        <!-- ЯРКАЯ ПОЛОСА ПРОГРЕССА (ТЕПЕРЬ ВИДНА И КРАСИВА!) -->
+        <!-- ЯРКАЯ ПОЛОСА ПРОГРЕССА -->
         <div class="speed-instruction">
             <div class="progress-indicator"></div>
             <span class="label-slow">Медленно</span>
@@ -512,44 +510,41 @@
         // ================================
         // 🛠️ ГДЕ МЕНЯТЬ СКОРОСТЬ ЧТЕНИЯ:
         // ================================
-        // Измените эти значения, чтобы настроить скорость:
         const SLOW_WPM = 100;     // ← Медленная скорость (слов в минуту)
         const FAST_WPM = 170;     // ← Быстрая скорость (слов в минуту)
         const EXTRA_TIME_SECONDS = 0.3; // Дополнительное время после каждого предложения (сек)
 
-        const SENTENCE_DELIMITERS = /[.!?;:]/;
-        const EXERCISES_JSON = 'exercises.json';
-
-        let sentenceTexts = [];
-        let currentSentenceIndex = 0;
+        const SENTENCES_FILE = 'sentences.txt'; // ← Файл с предложениями построчно
+        let sentences = []; // Массив всех предложений
+        let currentSentenceIndex = 0; // Индекс текущего предложения (идёт по порядку)
         let isReading = false;
         let animationTimeout = null;
         let currentDurationMs = 0;
         let progressIndicator = document.querySelector('.progress-indicator');
 
-        async function loadRandomExercise() {
-            pauseReading();
+        // Загрузка списка предложений при старте
+        async function loadSentences() {
             const status = document.getElementById('status');
-            status.textContent = '';
+            status.textContent = 'Загружаем предложения...';
 
             try {
-                const response = await fetch(EXERCISES_JSON + '?v=' + Date.now());
-                if (!response.ok) throw new Error('Файл не найден');
-                const exercises = await response.json();
+                const response = await fetch(SENTENCES_FILE + '?v=' + Date.now());
+                if (!response.ok) throw new Error('Файл sentences.txt не найден');
 
-                if (!Array.isArray(exercises) || exercises.length === 0) {
-                    throw new Error('Нет упражнений');
+                const text = await response.text();
+                sentences = text.split('\n')
+                    .map(line => line.trim())
+                    .filter(line => line.length > 0);
+
+                if (sentences.length === 0) {
+                    throw new Error('Файл sentences.txt пуст');
                 }
 
-                const exercise = exercises[Math.floor(Math.random() * exercises.length)];
-
-                if (!exercise.text || typeof exercise.text !== 'string') {
-                    throw new Error('Упражнение не содержит текста');
-                }
-
-                splitIntoSentences(exercise.text);
+                // Выбираем случайное первое предложение
+                currentSentenceIndex = Math.floor(Math.random() * sentences.length);
                 renderCurrentSentence();
                 resetState();
+                status.textContent = '';
 
             } catch (err) {
                 document.getElementById('text-container').innerHTML =
@@ -558,36 +553,11 @@
             }
         }
 
-        function splitIntoSentences(text) {
-            sentenceTexts = [];
-            const sentences = text.split(SENTENCE_DELIMITERS).map(s => s.trim()).filter(s => s);
-            const delimiters = text.match(SENTENCE_DELIMITERS) || [];
-
-            for (let i = 0; i < sentences.length; i++) {
-                const sentence = sentences[i];
-                const delimiter = i < delimiters.length ? delimiters[i] : '';
-                const fullSentence = sentence + delimiter;
-                if (fullSentence.trim()) {
-                    sentenceTexts.push(fullSentence);
-                }
-            }
-
-            if (sentenceTexts.length < 3) {
-                sentenceTexts = [...sentenceTexts, ...sentenceTexts.slice(0, 3 - sentenceTexts.length)];
-            }
-
-            currentSentenceIndex = 0;
-        }
-
         function renderCurrentSentence() {
             const container = document.getElementById('text-container');
             container.innerHTML = '';
 
-            if (currentSentenceIndex >= sentenceTexts.length) {
-                currentSentenceIndex = 0;
-            }
-
-            const currentText = sentenceTexts[currentSentenceIndex];
+            const currentText = sentences[currentSentenceIndex];
 
             const wrapper = document.createElement('div');
             wrapper.className = 'phrase-wrapper';
@@ -615,20 +585,20 @@
 
         function getDurationAndSpeed(text) {
             const words = text.trim().split(/\s+/).filter(w => w).length;
-            const isSlow = Math.random() < 0.5;
-            const wpm = isSlow ? SLOW_WPM : FAST_WPM; // ← ИСПОЛЬЗУЕТ ЗНАЧЕНИЯ ИЗ ВЫШЕ!
+            const isSlow = Math.random() < 0.5; // Случайно выбираем медленно/быстро
+            const wpm = isSlow ? SLOW_WPM : FAST_WPM;
             const durationMs = ((words / wpm) * 60 + EXTRA_TIME_SECONDS) * 1000;
             return { isSlow, durationMs, words };
         }
 
         function startReading() {
-            if (sentenceTexts.length === 0) return;
+            if (sentences.length === 0) return;
 
             pauseReading();
             isReading = true;
 
             const wrapper = document.querySelector('.phrase-wrapper');
-            const { isSlow, durationMs } = getDurationAndSpeed(sentenceTexts[currentSentenceIndex]);
+            const { isSlow, durationMs } = getDurationAndSpeed(sentences[currentSentenceIndex]);
             currentDurationMs = durationMs;
 
             wrapper.classList.remove('slow', 'fast');
@@ -652,7 +622,7 @@
                     setTimeout(updateProgress, interval);
                 } else {
                     wrapper.classList.add('animate');
-                    nextSentence();
+                    nextSentence(); // Автоматически переходим к следующему
                 }
             };
 
@@ -665,24 +635,17 @@
         }
 
         function nextSentence() {
-            currentSentenceIndex++;
-            if (currentSentenceIndex >= sentenceTexts.length) {
-                currentSentenceIndex = 0;
-            }
-
+            // Переходим к следующему предложению по порядку, циклично
+            currentSentenceIndex = (currentSentenceIndex + 1) % sentences.length;
             setTimeout(() => {
                 renderCurrentSentence();
-                startReading();
+                startReading(); // Автоматически запускаем следующее
             }, 500);
         }
 
         function pauseReading() {
             if (!isReading) return;
             isReading = false;
-            if (animationTimeout) {
-                clearTimeout(animationTimeout);
-                animationTimeout = null;
-            }
             document.getElementById('btn-start').disabled = false;
             document.getElementById('btn-pause').disabled = true;
             document.getElementById('status').textContent = '⏸️ На паузе';
@@ -699,7 +662,7 @@
         }
 
         window.onload = () => {
-            loadRandomExercise();
+            loadSentences();
 
             document.getElementById('btn-start').onclick = startReading;
             document.getElementById('btn-pause').onclick = pauseReading;
