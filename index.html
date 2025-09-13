@@ -99,7 +99,7 @@
             letter-spacing: -0.3px;
         }
 
-        /* === НОВЫЙ БЛОК ИНСТРУКЦИИ === */
+        /* === БЛОК ИНСТРУКЦИИ === */
         .instruction-box {
             background: linear-gradient(135deg, #6366f1, #4f46e5);
             border-radius: 16px;
@@ -156,7 +156,7 @@
             z-index: 2;
         }
 
-        /* === ПОЛОСА ПРОГРЕССА (ПОД ИНСТРУКЦИЕЙ) === */
+        /* === ПОЛОСА ПРОГРЕССА (ПОД ТЕКСТОМ) === */
         .speed-instruction {
             position: relative;
             width: 100%;
@@ -475,7 +475,7 @@
             <p class="subtitle">Развивай речь, как оратор</p>
         </header>
 
-        <!-- НОВЫЙ БЛОК ИНСТРУКЦИИ -->
+        <!-- БЛОК ИНСТРУКЦИИ -->
         <div class="instruction-box">
             <div class="text">
                 <span class="icon">📘</span>
@@ -489,12 +489,12 @@
             </p>
         </div>
 
-        <!-- ОДНО СЛУЧАЙНОЕ ПРЕДЛОЖЕНИЕ -->
+        <!-- ОДНО ПРЕДЛОЖЕНИЕ -->
         <div id="text-container" class="text-area">
             <!-- Здесь будет отображаться одно предложение -->
         </div>
 
-        <!-- ПОЛОСА ПРОГРЕССА (ПОД ИНСТРУКЦИЕЙ) -->
+        <!-- ПОЛОСА ПРОГРЕССА (ДВИЖЕТСЯ С РЕАЛЬНОЙ СКОРОСТЬЮ) -->
         <div class="speed-instruction">
             <div class="progress-indicator"></div>
             <span class="label-slow">Синий — медленно</span>
@@ -510,7 +510,7 @@
             <button id="btn-start">▶️ Начать</button>
             <button id="btn-pause" disabled>⏸️ Пауза</button>
             <button id="btn-reset">🔄 Сброс</button>
-            <button id="btn-next">⏭️ Следующее</button>
+            <button id="btn-next" style="display: none;">⏭️ Следующее</button>
         </div>
 
         <div id="status" class="status"></div>
@@ -525,7 +525,7 @@
         const EXERCISES_JSON = 'exercises.json';
 
         let sentenceTexts = [];
-        let currentSentence = '';
+        let currentSentenceIndex = 0;
         let isReading = false;
         let animationTimeout = null;
         let currentDurationMs = 0;
@@ -575,23 +575,32 @@
                     sentenceTexts.push(fullSentence);
                 }
             }
+
+            // Если предложений мало — добавляем повторы для надёжности
+            if (sentenceTexts.length < 3) {
+                sentenceTexts = [...sentenceTexts, ...sentenceTexts.slice(0, 3 - sentenceTexts.length)];
+            }
+
+            currentSentenceIndex = 0;
         }
 
         function renderCurrentSentence() {
             const container = document.getElementById('text-container');
             container.innerHTML = '';
 
-            if (sentenceTexts.length === 0) return;
+            if (currentSentenceIndex >= sentenceTexts.length) {
+                currentSentenceIndex = 0;
+            }
 
-            currentSentence = sentenceTexts[0]; // Берём первое предложение
+            const currentText = sentenceTexts[currentSentenceIndex];
 
             const wrapper = document.createElement('div');
             wrapper.className = 'phrase-wrapper';
-            wrapper.dataset.index = 0;
+            wrapper.dataset.index = currentSentenceIndex;
 
             const phraseEl = document.createElement('span');
             phraseEl.className = 'phrase';
-            phraseEl.textContent = currentSentence;
+            phraseEl.textContent = currentText;
 
             wrapper.appendChild(phraseEl);
             container.appendChild(wrapper);
@@ -603,7 +612,6 @@
         }
 
         function resetState() {
-            currentSentence = '';
             document.getElementById('btn-start').disabled = false;
             document.getElementById('btn-pause').disabled = true;
             document.getElementById('btn-reset').disabled = false;
@@ -626,7 +634,7 @@
             isReading = true;
 
             const wrapper = document.querySelector('.phrase-wrapper');
-            const { isSlow, durationMs } = getDurationAndSpeed(currentSentence);
+            const { isSlow, durationMs } = getDurationAndSpeed(sentenceTexts[currentSentenceIndex]);
             currentDurationMs = durationMs;
 
             // Применяем стиль
@@ -638,8 +646,8 @@
             // Сбрасываем ползунок
             progressIndicator.style.width = '0%';
 
-            // Запускаем анимацию ползунка
-            const interval = 50;
+            // Запускаем анимацию ползунка с реальной скоростью
+            const interval = 50; // обновление каждые 50 мс
             const steps = durationMs / interval;
             let step = 0;
 
@@ -652,9 +660,9 @@
                 if (step < steps) {
                     setTimeout(updateProgress, interval);
                 } else {
+                    // Анимация завершена — переходим к следующему
                     wrapper.classList.add('animate');
-                    pauseReading();
-                    document.getElementById('status').textContent = '✅ Чтение завершено!';
+                    nextSentence();
                 }
             };
 
@@ -664,6 +672,20 @@
             document.getElementById('btn-pause').disabled = false;
             document.getElementById('btn-reset').disabled = false;
             document.getElementById('status').textContent = '▶️ Читайте вслух...';
+        }
+
+        function nextSentence() {
+            // Переход к следующему предложению
+            currentSentenceIndex++;
+            if (currentSentenceIndex >= sentenceTexts.length) {
+                currentSentenceIndex = 0; // зацикливаем
+            }
+
+            // Ждём 0.5 сек перед следующим чтением — даём пользователю "вдохнуть"
+            setTimeout(() => {
+                renderCurrentSentence();
+                startReading(); // Автоматически запускаем следующее
+            }, 500);
         }
 
         function pauseReading() {
@@ -695,7 +717,7 @@
             document.getElementById('btn-start').onclick = startReading;
             document.getElementById('btn-pause').onclick = pauseReading;
             document.getElementById('btn-reset').onclick = resetReading;
-            document.getElementById('btn-next').onclick = loadRandomExercise;
+            // Кнопка "Следующее" скрыта — используется автоматическая смена
         };
     </script>
 </body>
