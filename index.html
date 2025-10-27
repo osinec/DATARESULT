@@ -160,6 +160,14 @@
             box-shadow: 0 8px 20px rgba(0, 136, 204, 0.4);
         }
 
+        .telegram-btn:disabled {
+            background: rgba(255, 255, 255, 0.1);
+            color: rgba(255, 255, 255, 0.5);
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
         .selected-date {
             margin-top: 20px;
             font-size: 1.2rem;
@@ -175,6 +183,25 @@
             border: 1px solid rgba(0, 200, 83, 0.3);
             color: #64ffda;
             display: none;
+        }
+
+        .telegram-connected {
+            margin-top: 20px;
+            padding: 15px;
+            background: rgba(0, 200, 83, 0.1);
+            border-radius: 10px;
+            border: 1px solid rgba(0, 200, 83, 0.3);
+            color: #64ffda;
+            display: none;
+        }
+
+        .telegram-info {
+            margin-top: 15px;
+            padding: 10px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 8px;
+            font-size: 0.9rem;
+            color: rgba(255, 255, 255, 0.7);
         }
 
         @media (max-width: 480px) {
@@ -222,10 +249,17 @@
             <button class="telegram-btn" id="connectTelegram">
                 <i class="fab fa-telegram"></i> Подключить Telegram
             </button>
+            <div class="telegram-info">
+                После подключения вы получите тестовое сообщение от бота
+            </div>
         </div>
         
         <div class="notification" id="notification">
             Напоминание успешно установлено! В выбранную дату вы получите сообщение в Telegram.
+        </div>
+        
+        <div class="telegram-connected" id="telegramConnected">
+            <i class="fas fa-check-circle"></i> Telegram успешно подключен! Вы получили тестовое сообщение.
         </div>
     </div>
 
@@ -238,10 +272,12 @@
         const selectedDateElement = document.getElementById('selectedDate');
         const connectTelegramBtn = document.getElementById('connectTelegram');
         const notificationElement = document.getElementById('notification');
+        const telegramConnectedElement = document.getElementById('telegramConnected');
         
         // Переменные календаря
         let currentDate = new Date();
         let selectedDate = null;
+        let isTelegramConnected = false;
         
         // Дни недели
         const daysOfWeek = ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Вс'];
@@ -326,20 +362,73 @@
             // Показываем уведомление
             notificationElement.style.display = 'block';
             
-            // Имитируем отправку запроса на сервер для установки напоминания
+            // Скрываем уведомление через 5 секунд
             setTimeout(() => {
-                // В реальном приложении здесь был бы запрос к серверу
-                console.log(`Напоминание установлено на дату: ${selectedDate.toLocaleDateString()}`);
-            }, 1000);
+                notificationElement.style.display = 'none';
+            }, 5000);
             
             // Перерисовываем календарь, чтобы выделить выбранную дату
             initCalendar();
+            
+            // Если Telegram подключен, отправляем запрос на сервер
+            if (isTelegramConnected) {
+                sendReminderToServer();
+            }
         }
         
         // Подключение Telegram
         function connectTelegram() {
             // В реальном приложении здесь была бы авторизация через Telegram API
-            alert('В реальном приложении здесь была бы авторизация через Telegram API. После подключения в выбранную дату вам придет сообщение "Как результат?"');
+            // Имитируем процесс подключения
+            connectTelegramBtn.disabled = true;
+            connectTelegramBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Подключение...';
+            
+            setTimeout(() => {
+                // Имитируем успешное подключение
+                isTelegramConnected = true;
+                connectTelegramBtn.innerHTML = '<i class="fab fa-telegram"></i> Подключено';
+                connectTelegramBtn.style.background = 'linear-gradient(135deg, #00c853, #64dd17)';
+                telegramConnectedElement.style.display = 'block';
+                
+                // Имитируем отправку тестового сообщения
+                simulateTelegramMessage();
+                
+                // Если дата уже выбрана, отправляем напоминание на сервер
+                if (selectedDate) {
+                    sendReminderToServer();
+                }
+            }, 2000);
+        }
+        
+        // Имитация отправки сообщения в Telegram
+        function simulateTelegramMessage() {
+            // В реальном приложении здесь был бы запрос к Telegram API
+            console.log("Сообщение отправлено в Telegram: Привет! Вы успешно подключили бота напоминаний. В выбранную дату вы получите сообщение 'Как результат?'");
+            
+            // Показываем имитацию уведомления
+            alert("Сообщение от бота: Привет! Вы успешно подключили бота напоминаний. В выбранную дату вы получите сообщение 'Как результат?'");
+        }
+        
+        // Отправка напоминания на сервер
+        function sendReminderToServer() {
+            // В реальном приложении здесь был бы запрос к серверу
+            console.log(`Напоминание установлено на дату: ${selectedDate.toLocaleDateString()}`);
+            
+            // Имитируем отправку запроса
+            fetch('https://jsonplaceholder.typicode.com/posts', {
+                method: 'POST',
+                body: JSON.stringify({
+                    date: selectedDate.toISOString().split('T')[0],
+                    message: "Как результат?",
+                    userId: "user123" // В реальном приложении здесь был бы ID пользователя
+                }),
+                headers: {
+                    'Content-type': 'application/json; charset=UTF-8',
+                },
+            })
+            .then(response => response.json())
+            .then(json => console.log("Напоминание сохранено на сервере:", json))
+            .catch(error => console.error("Ошибка при сохранении напоминания:", error));
         }
         
         // Переключение месяцев
