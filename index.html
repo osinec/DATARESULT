@@ -3,319 +3,457 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Скачать кнопки как PNG</title>
+    <title>Темный таймер с задачами</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
         }
-        
+
         body {
-            font-family: 'Segoe UI', system-ui, sans-serif;
-            background: linear-gradient(135deg, #f5f5f5, #e8f5e8);
+            background: linear-gradient(135deg, #0c0c0c, #1a1a2e);
+            color: #fff;
             min-height: 100vh;
-            padding: 40px 20px;
             display: flex;
             flex-direction: column;
+            justify-content: center;
             align-items: center;
-        }
-        
-        .container {
-            max-width: 800px;
-            width: 100%;
-            text-align: center;
-        }
-        
-        h1 {
-            color: #2e7d32;
-            margin-bottom: 10px;
-            font-size: 2.5rem;
-        }
-        
-        .subtitle {
-            color: #555;
-            margin-bottom: 40px;
-            font-size: 1.1rem;
-        }
-        
-        .buttons-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 40px;
-            margin-bottom: 50px;
-        }
-        
-        .button-card {
-            background: white;
-            padding: 30px;
-            border-radius: 20px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
-            border: 2px solid #e0e0e0;
-        }
-        
-        .button-card h3 {
-            color: #2e7d32;
-            margin-bottom: 20px;
-            font-size: 1.3rem;
-        }
-        
-        .button-preview {
-            margin: 20px 0;
-            display: inline-block;
-            cursor: pointer;
-            transition: transform 0.3s ease;
-        }
-        
-        .button-preview:hover {
-            transform: scale(1.05);
-        }
-        
-        /* Оранжевая кнопка */
-        .orange-btn {
-            position: relative;
-            padding: 20px 50px;
-            font-size: 1.4rem;
-            font-weight: 700;
-            color: #ffffff;
-            background: linear-gradient(135deg, #ff6b35, #ff8e53, #ff6b35);
-            border: none;
-            border-radius: 15px;
-            box-shadow: 
-                0 8px 25px rgba(255, 107, 53, 0.4),
-                0 12px 30px rgba(255, 142, 83, 0.3),
-                inset 0 2px 0 rgba(255, 255, 255, 0.3),
-                0 0 0 3px rgba(255, 107, 53, 0.1);
-            text-transform: uppercase;
-            letter-spacing: 2px;
-            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-        }
-        
-        .orange-btn::after {
-            content: '';
-            position: absolute;
-            top: 3px;
-            left: 3px;
-            right: 3px;
-            bottom: 3px;
-            border-radius: 12px;
-            background: transparent;
-            border: 2px solid rgba(255, 255, 255, 0.3);
-            pointer-events: none;
-        }
-        
-        /* Фиолетовая кнопка с перчаткой */
-        .thanos-btn {
-            position: relative;
-            padding: 20px 50px;
-            font-size: 1.4rem;
-            font-weight: 700;
-            color: #ffffff;
-            background: linear-gradient(135deg, #6a0dad, #8a2be2, #9370db);
-            border: none;
-            border-radius: 15px;
-            box-shadow: 
-                0 8px 25px rgba(106, 13, 173, 0.5),
-                0 12px 30px rgba(138, 43, 226, 0.4),
-                inset 0 2px 0 rgba(255, 255, 255, 0.3),
-                0 0 0 3px rgba(106, 13, 173, 0.2);
-            text-transform: uppercase;
-            letter-spacing: 2px;
-            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-        }
-        
-        .thanos-btn::after {
-            content: '';
-            position: absolute;
-            top: 3px;
-            left: 3px;
-            right: 3px;
-            bottom: 3px;
-            border-radius: 12px;
-            background: transparent;
-            border: 2px solid rgba(255, 255, 255, 0.3);
-            pointer-events: none;
-        }
-        
-        .thanos-gauntlet {
-            position: relative;
-            display: inline-block;
-            width: 30px;
-            height: 30px;
-            margin-right: 12px;
-            vertical-align: middle;
-        }
-        
-        .gauntlet-base {
-            position: absolute;
-            width: 100%;
-            height: 100%;
-            background: 
-                radial-gradient(circle at 30% 30%, #ffd700 5%, transparent 6%),
-                radial-gradient(circle at 70% 30%, #ffd700 5%, transparent 6%),
-                radial-gradient(circle at 30% 70%, #ffd700 5%, transparent 6%),
-                radial-gradient(circle at 70% 70%, #ffd700 5%, transparent 6%),
-                radial-gradient(circle at 50% 50%, #ffd700 8%, transparent 9%);
-            background-color: #4b0082;
-            border-radius: 50%;
-            box-shadow: 
-                inset 0 0 10px rgba(255, 215, 0, 0.5),
-                0 0 10px rgba(255, 215, 0, 0.3);
-        }
-        
-        .infinity-stones {
-            position: absolute;
-            width: 100%;
-            height: 100%;
-        }
-        
-        .stone {
-            position: absolute;
-            width: 6px;
-            height: 6px;
-            border-radius: 50%;
-        }
-        
-        .stone:nth-child(1) { top: 25%; left: 25%; background: #ff0000; }
-        .stone:nth-child(2) { top: 25%; right: 25%; background: #00ff00; }
-        .stone:nth-child(3) { bottom: 25%; left: 25%; background: #0000ff; }
-        .stone:nth-child(4) { bottom: 25%; right: 25%; background: #ffff00; }
-        .stone:nth-child(5) { top: 50%; left: 50%; transform: translate(-50%, -50%); background: #ff00ff; }
-        .stone:nth-child(6) { top: 10%; left: 50%; transform: translateX(-50%); background: #00ffff; }
-        
-        .download-section {
-            background: white;
-            padding: 30px;
-            border-radius: 15px;
-            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
-            margin-top: 20px;
-        }
-        
-        .download-section h2 {
-            color: #2e7d32;
-            margin-bottom: 20px;
-        }
-        
-        .instructions {
-            text-align: left;
-            background: #f9f9f9;
             padding: 20px;
+        }
+
+        .container {
+            text-align: center;
+            max-width: 500px;
+            width: 100%;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.5);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        h1 {
+            margin-bottom: 25px;
+            font-weight: 300;
+            letter-spacing: 2px;
+            color: #e0e0e0;
+            font-size: 2.2rem;
+        }
+
+        .task-input {
+            width: 100%;
+            margin-bottom: 20px;
+        }
+
+        .task-input input {
+            width: 100%;
+            padding: 15px 20px;
+            font-size: 1.1rem;
+            background: rgba(255, 255, 255, 0.07);
+            border: 1px solid rgba(100, 255, 218, 0.3);
             border-radius: 10px;
-            margin: 20px 0;
-            border-left: 4px solid #4caf50;
+            color: #fff;
+            outline: none;
+            transition: all 0.3s ease;
         }
-        
-        .instructions ol {
-            margin-left: 20px;
+
+        .task-input input:focus {
+            border-color: #64ffda;
+            box-shadow: 0 0 10px rgba(100, 255, 218, 0.3);
         }
-        
-        .instructions li {
-            margin-bottom: 10px;
-            line-height: 1.5;
+
+        .task-input input::placeholder {
+            color: rgba(255, 255, 255, 0.5);
         }
-        
-        .btn-content {
+
+        .current-task {
+            font-size: 1.2rem;
+            margin-bottom: 20px;
+            color: #64ffda;
+            font-weight: 500;
+            min-height: 30px;
+        }
+
+        .timer-display {
+            font-size: 5rem;
+            font-weight: 300;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 15px;
+            padding: 30px 20px;
+            margin-bottom: 40px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            letter-spacing: 3px;
+            color: #64ffda;
+            text-shadow: 0 0 10px rgba(100, 255, 218, 0.5);
+        }
+
+        .controls {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+
+        .time-buttons {
+            display: flex;
+            justify-content: space-between;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        button {
+            padding: 15px 25px;
+            font-size: 1rem;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 1px;
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 10px;
+            gap: 8px;
         }
-        
-        @media (max-width: 768px) {
-            .buttons-grid {
-                grid-template-columns: 1fr;
-                gap: 30px;
+
+        .time-btn {
+            flex: 1;
+            background: rgba(41, 98, 255, 0.1);
+            color: #2962ff;
+            border: 1px solid rgba(41, 98, 255, 0.3);
+        }
+
+        .time-btn:hover {
+            background: rgba(41, 98, 255, 0.2);
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(41, 98, 255, 0.2);
+        }
+
+        .start-btn {
+            background: linear-gradient(135deg, #00c853, #64dd17);
+            color: white;
+            box-shadow: 0 5px 15px rgba(0, 200, 83, 0.3);
+        }
+
+        .start-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(0, 200, 83, 0.4);
+        }
+
+        .pause-btn {
+            background: linear-gradient(135deg, #ff9100, #ffab00);
+            color: white;
+            box-shadow: 0 5px 15px rgba(255, 145, 0, 0.3);
+        }
+
+        .pause-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(255, 145, 0, 0.4);
+        }
+
+        .reset-btn {
+            background: linear-gradient(135deg, #ff1744, #f50057);
+            color: white;
+            box-shadow: 0 5px 15px rgba(255, 23, 68, 0.3);
+        }
+
+        .reset-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(255, 23, 68, 0.4);
+        }
+
+        .finished {
+            animation: pulse 1.5s infinite;
+        }
+
+        @keyframes pulse {
+            0% {
+                color: #64ffda;
+                text-shadow: 0 0 10px rgba(100, 255, 218, 0.5);
+            }
+            50% {
+                color: #ff1744;
+                text-shadow: 0 0 15px rgba(255, 23, 68, 0.7);
+            }
+            100% {
+                color: #64ffda;
+                text-shadow: 0 0 10px rgba(100, 255, 218, 0.5);
+            }
+        }
+
+        .task-history {
+            margin-top: 30px;
+            text-align: left;
+            max-height: 150px;
+            overflow-y: auto;
+        }
+
+        .task-history h3 {
+            margin-bottom: 15px;
+            color: #e0e0e0;
+            font-weight: 400;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            padding-bottom: 8px;
+        }
+
+        .task-item {
+            padding: 10px;
+            margin-bottom: 8px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 8px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .task-item.completed {
+            opacity: 0.7;
+            text-decoration: line-through;
+        }
+
+        .task-item .time {
+            font-size: 0.9rem;
+            color: #64ffda;
+        }
+
+        @media (max-width: 480px) {
+            .timer-display {
+                font-size: 3.5rem;
+                padding: 20px 15px;
             }
             
-            h1 {
-                font-size: 2rem;
+            .time-buttons {
+                flex-direction: column;
+            }
+            
+            button {
+                padding: 12px 20px;
+            }
+            
+            .container {
+                padding: 20px;
             }
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>🎨 Кнопки для скачивания</h1>
-        <p class="subtitle">Две стильные кнопки для вашего проекта</p>
+        <h1><i class="fas fa-clock"></i> ТАЙМЕР</h1>
         
-        <div class="buttons-grid">
-            <!-- Оранжевая кнопка -->
-            <div class="button-card">
-                <h3>🔥 Оранжево-красная кнопка</h3>
-                <div class="button-preview" onclick="downloadButton('orange')">
-                    <button class="orange-btn">
-                        <span class="btn-content">
-                            <span>🔥</span>
-                            ДЕЙСТВИЕ
-                        </span>
-                    </button>
-                </div>
-                <p><strong>Размер:</strong> 300 × 80px</p>
-                <p><strong>Цвета:</strong> Оранжевый градиент</p>
-            </div>
-            
-            <!-- Кнопка с перчаткой Таноса -->
-            <div class="button-card">
-                <h3>💎 Кнопка с перчаткой Таноса</h3>
-                <div class="button-preview" onclick="downloadButton('thanos')">
-                    <button class="thanos-btn">
-                        <span class="btn-content">
-                            <div class="thanos-gauntlet">
-                                <div class="gauntlet-base"></div>
-                                <div class="infinity-stones">
-                                    <div class="stone"></div>
-                                    <div class="stone"></div>
-                                    <div class="stone"></div>
-                                    <div class="stone"></div>
-                                    <div class="stone"></div>
-                                    <div class="stone"></div>
-                                </div>
-                            </div>
-                            УНИЧТОЖИТЬ
-                        </span>
-                    </button>
-                </div>
-                <p><strong>Размер:</strong> 350 × 80px</p>
-                <p><strong>Цвета:</strong> Фиолетовый с золотом</p>
-            </div>
+        <div class="task-input">
+            <input type="text" id="taskInput" placeholder="Введите вашу задачу...">
         </div>
         
-        <div class="download-section">
-            <h2>📥 Как скачать кнопки</h2>
-            
-            <div class="instructions">
-                <h3>Инструкция по сохранению как PNG:</h3>
-                <ol>
-                    <li><strong>Нажмите правой кнопкой мыши</strong> на понравившуюся кнопку</li>
-                    <li>Выберите в меню <strong>"Сохранить изображение как..."</strong></li>
-                    <li>В диалоговом окне выберите формат <strong>PNG</strong></li>
-                    <li>Укажите имя файла и нажмите <strong>"Сохранить"</strong></li>
-                </ol>
-                
-                <p><strong>Альтернативный способ:</strong> Сделайте скриншот области с кнопкой и обрежьте в графическом редакторе.</p>
-            </div>
-            
-            <div style="background: #e8f5e9; padding: 15px; border-radius: 10px; margin-top: 20px;">
-                <h4>💡 Совет</h4>
-                <p>Для лучшего качества сохраняйте кнопки в их оригинальном размере, затем масштабируйте при необходимости в графическом редакторе.</p>
-            </div>
+        <div class="current-task" id="currentTask"></div>
+        
+        <div class="timer-display" id="timer">25:00</div>
+        
+        <div class="time-buttons">
+            <button class="time-btn" id="add5"><i class="fas fa-plus"></i> 5 мин</button>
+            <button class="time-btn" id="add10"><i class="fas fa-plus"></i> 10 мин</button>
+            <button class="time-btn" id="add15"><i class="fas fa-plus"></i> 15 мин</button>
+        </div>
+        
+        <div class="controls">
+            <button class="start-btn" id="start"><i class="fas fa-play"></i> Старт</button>
+            <button class="pause-btn" id="pause"><i class="fas fa-pause"></i> Пауза</button>
+            <button class="reset-btn" id="reset"><i class="fas fa-redo"></i> Сброс</button>
+        </div>
+        
+        <div class="task-history">
+            <h3><i class="fas fa-history"></i> История задач</h3>
+            <div id="taskList"></div>
         </div>
     </div>
 
     <script>
-        function downloadButton(type) {
-            alert(`Правой кнопкой мыши нажмите на кнопку и выберите "Сохранить изображение как..."\n\nИли сделайте скриншот для идеального качества!`);
+        // Элементы DOM
+        const timer = document.getElementById('timer');
+        const startBtn = document.getElementById('start');
+        const pauseBtn = document.getElementById('pause');
+        const resetBtn = document.getElementById('reset');
+        const add5Btn = document.getElementById('add5');
+        const add10Btn = document.getElementById('add10');
+        const add15Btn = document.getElementById('add15');
+        const taskInput = document.getElementById('taskInput');
+        const currentTask = document.getElementById('currentTask');
+        const taskList = document.getElementById('taskList');
+        
+        // Переменные таймера
+        let timeLeft = 25 * 60; // 25 минут по умолчанию
+        let timerInterval = null;
+        let isRunning = false;
+        let tasks = JSON.parse(localStorage.getItem('tasks')) || [];
+        
+        // Обновление отображения таймера
+        function updateDisplay() {
+            const minutes = Math.floor(timeLeft / 60);
+            const seconds = timeLeft % 60;
+            
+            const formattedMinutes = minutes < 10 ? '0' + minutes : minutes;
+            const formattedSeconds = seconds < 10 ? '0' + seconds : seconds;
+            
+            timer.textContent = `${formattedMinutes}:${formattedSeconds}`;
+            
+            if (timeLeft === 0 && isRunning) {
+                timer.classList.add('finished');
+                clearInterval(timerInterval);
+                isRunning = false;
+                startBtn.innerHTML = '<i class="fas fa-play"></i> Старт';
+                
+                // Помечаем текущую задачу как выполненную
+                if (currentTask.textContent !== '') {
+                    addToHistory(currentTask.textContent, true);
+                    currentTask.textContent = '';
+                }
+                
+                // Воспроизводим звук завершения
+                playNotificationSound();
+            } else {
+                timer.classList.remove('finished');
+            }
         }
         
-        // Добавляем возможность правого клика для скачивания
-        document.querySelectorAll('.button-preview').forEach(preview => {
-            preview.addEventListener('contextmenu', function(e) {
-                e.preventDefault();
-                const buttonType = this.querySelector('.orange-btn') ? 'orange' : 'thanos';
-                const buttonName = buttonType === 'orange' ? 'оранжевая_кнопка' : 'кнопка_таноса';
-                alert(`Готово к сохранению: ${buttonName}.png\n\nВыберите "Сохранить изображение как..." в меню`);
+        // Воспроизведение звука уведомления
+        function playNotificationSound() {
+            try {
+                const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                const oscillator = audioContext.createOscillator();
+                const gainNode = audioContext.createGain();
+                
+                oscillator.connect(gainNode);
+                gainNode.connect(audioContext.destination);
+                
+                oscillator.frequency.setValueAtTime(800, audioContext.currentTime);
+                oscillator.frequency.setValueAtTime(600, audioContext.currentTime + 0.1);
+                oscillator.frequency.setValueAtTime(800, audioContext.currentTime + 0.2);
+                
+                gainNode.gain.setValueAtTime(0.5, audioContext.currentTime);
+                gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.3);
+                
+                oscillator.start(audioContext.currentTime);
+                oscillator.stop(audioContext.currentTime + 0.3);
+            } catch (e) {
+                console.log("Аудио не поддерживается");
+            }
+        }
+        
+        // Запуск таймера
+        function startTimer() {
+            if (timeLeft > 0 && !isRunning) {
+                isRunning = true;
+                startBtn.innerHTML = '<i class="fas fa-play"></i> Возобновить';
+                timerInterval = setInterval(() => {
+                    timeLeft--;
+                    updateDisplay();
+                }, 1000);
+            }
+        }
+        
+        // Пауза таймера
+        function pauseTimer() {
+            if (isRunning) {
+                clearInterval(timerInterval);
+                isRunning = false;
+                startBtn.innerHTML = '<i class="fas fa-play"></i> Возобновить';
+            }
+        }
+        
+        // Сброс таймера
+        function resetTimer() {
+            clearInterval(timerInterval);
+            timeLeft = 25 * 60;
+            isRunning = false;
+            startBtn.innerHTML = '<i class="fas fa-play"></i> Старт';
+            updateDisplay();
+        }
+        
+        // Добавление времени
+        function addTime(minutes) {
+            timeLeft += minutes * 60;
+            updateDisplay();
+            
+            // Если таймер не запущен, автоматически запускаем его при добавлении времени
+            if (!isRunning && timeLeft > 0) {
+                startTimer();
+            }
+        }
+        
+        // Установка задачи
+        function setTask() {
+            const taskText = taskInput.value.trim();
+            if (taskText) {
+                currentTask.textContent = taskText;
+                taskInput.value = '';
+                
+                // Если задача новая, добавляем в историю
+                if (!tasks.some(task => task.text === taskText && !task.completed)) {
+                    addToHistory(taskText, false);
+                }
+            }
+        }
+        
+        // Добавление задачи в историю
+        function addToHistory(taskText, completed) {
+            const task = {
+                text: taskText,
+                completed: completed,
+                time: new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})
+            };
+            
+            tasks.unshift(task);
+            
+            // Сохраняем только последние 5 задач
+            if (tasks.length > 5) {
+                tasks = tasks.slice(0, 5);
+            }
+            
+            // Сохраняем в localStorage
+            localStorage.setItem('tasks', JSON.stringify(tasks));
+            
+            // Обновляем отображение
+            renderTaskHistory();
+        }
+        
+        // Отрисовка истории задач
+        function renderTaskHistory() {
+            taskList.innerHTML = '';
+            
+            tasks.forEach(task => {
+                const taskItem = document.createElement('div');
+                taskItem.className = `task-item ${task.completed ? 'completed' : ''}`;
+                
+                taskItem.innerHTML = `
+                    <span>${task.text}</span>
+                    <span class="time">${task.time}</span>
+                `;
+                
+                taskList.appendChild(taskItem);
             });
+        }
+        
+        // Назначаем обработчики событий
+        startBtn.addEventListener('click', startTimer);
+        pauseBtn.addEventListener('click', pauseTimer);
+        resetBtn.addEventListener('click', resetTimer);
+        add5Btn.addEventListener('click', () => addTime(5));
+        add10Btn.addEventListener('click', () => addTime(10));
+        add15Btn.addEventListener('click', () => addTime(15));
+        
+        taskInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                setTask();
+            }
         });
+        
+        // Инициализация
+        updateDisplay();
+        renderTaskHistory();
     </script>
 </body>
 </html>
