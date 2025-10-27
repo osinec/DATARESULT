@@ -204,6 +204,32 @@
             color: rgba(255, 255, 255, 0.7);
         }
 
+        .user-id-input {
+            width: 100%;
+            margin: 15px 0;
+        }
+
+        .user-id-input input {
+            width: 100%;
+            padding: 12px 15px;
+            font-size: 1rem;
+            background: rgba(255, 255, 255, 0.07);
+            border: 1px solid rgba(100, 255, 218, 0.3);
+            border-radius: 8px;
+            color: #fff;
+            outline: none;
+            transition: all 0.3s ease;
+        }
+
+        .user-id-input input:focus {
+            border-color: #64ffda;
+            box-shadow: 0 0 10px rgba(100, 255, 218, 0.3);
+        }
+
+        .user-id-input input::placeholder {
+            color: rgba(255, 255, 255, 0.5);
+        }
+
         @media (max-width: 480px) {
             .container {
                 padding: 20px;
@@ -245,12 +271,21 @@
         
         <div class="telegram-section">
             <h3><i class="fab fa-telegram"></i> Настройка Telegram</h3>
-            <p>Для получения напоминаний подключите свой аккаунт Telegram</p>
+            <p>Для получения напоминаний введите ваш Telegram ID</p>
+            
+            <div class="user-id-input">
+                <input type="text" id="telegramId" placeholder="Введите ваш Telegram ID">
+            </div>
+            
             <button class="telegram-btn" id="connectTelegram">
-                <i class="fab fa-telegram"></i> Подключить Telegram
+                <i class="fab fa-telegram"></i> Отправить тестовое сообщение
             </button>
+            
             <div class="telegram-info">
-                После подключения вы получите тестовое сообщение от бота
+                <p><strong>Как получить Telegram ID:</strong></p>
+                <p>1. Найдите бота @userinfobot в Telegram</p>
+                <p>2. Начните диалог с ботом</p>
+                <p>3. Скопируйте ваш ID из сообщения бота</p>
             </div>
         </div>
         
@@ -259,7 +294,7 @@
         </div>
         
         <div class="telegram-connected" id="telegramConnected">
-            <i class="fas fa-check-circle"></i> Telegram успешно подключен! Вы получили тестовое сообщение.
+            <i class="fas fa-check-circle"></i> Сообщение успешно отправлено в Telegram!
         </div>
     </div>
 
@@ -271,13 +306,16 @@
         const nextMonthBtn = document.getElementById('nextMonth');
         const selectedDateElement = document.getElementById('selectedDate');
         const connectTelegramBtn = document.getElementById('connectTelegram');
+        const telegramIdInput = document.getElementById('telegramId');
         const notificationElement = document.getElementById('notification');
         const telegramConnectedElement = document.getElementById('telegramConnected');
         
         // Переменные календаря
         let currentDate = new Date();
         let selectedDate = null;
-        let isTelegramConnected = false;
+        
+        // Конфигурация бота
+        const BOT_TOKEN = '8062214606:AAGNJNICxADgoLwxpA6sXB3eXDWqc7NA29Y';
         
         // Дни недели
         const daysOfWeek = ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Вс'];
@@ -369,66 +407,63 @@
             
             // Перерисовываем календарь, чтобы выделить выбранную дату
             initCalendar();
+        }
+        
+        // Отправка сообщения в Telegram
+        async function sendTelegramMessage() {
+            const telegramId = telegramIdInput.value.trim();
             
-            // Если Telegram подключен, отправляем запрос на сервер
-            if (isTelegramConnected) {
-                sendReminderToServer();
+            if (!telegramId) {
+                alert('Пожалуйста, введите ваш Telegram ID');
+                return;
             }
-        }
-        
-        // Подключение Telegram
-        function connectTelegram() {
-            // В реальном приложении здесь была бы авторизация через Telegram API
-            // Имитируем процесс подключения
+            
+            if (!/^\d+$/.test(telegramId)) {
+                alert('Telegram ID должен содержать только цифры');
+                return;
+            }
+            
             connectTelegramBtn.disabled = true;
-            connectTelegramBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Подключение...';
+            connectTelegramBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Отправка...';
             
-            setTimeout(() => {
-                // Имитируем успешное подключение
-                isTelegramConnected = true;
-                connectTelegramBtn.innerHTML = '<i class="fab fa-telegram"></i> Подключено';
-                connectTelegramBtn.style.background = 'linear-gradient(135deg, #00c853, #64dd17)';
-                telegramConnectedElement.style.display = 'block';
+            try {
+                const message = selectedDate 
+                    ? `Напоминание установлено на ${selectedDate.toLocaleDateString('ru-RU')}. В этот день я спрошу: "Как результат?"`
+                    : 'Привет! Вы подключили бота напоминаний. Выберите дату в календаре, и в этот день вы получите сообщение "Как результат?"';
                 
-                // Имитируем отправку тестового сообщения
-                simulateTelegramMessage();
+                const response = await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        chat_id: telegramId,
+                        text: message,
+                        parse_mode: 'HTML'
+                    })
+                });
                 
-                // Если дата уже выбрана, отправляем напоминание на сервер
-                if (selectedDate) {
-                    sendReminderToServer();
+                const data = await response.json();
+                
+                if (data.ok) {
+                    telegramConnectedElement.style.display = 'block';
+                    connectTelegramBtn.innerHTML = '<i class="fab fa-telegram"></i> Сообщение отправлено';
+                    connectTelegramBtn.style.background = 'linear-gradient(135deg, #00c853, #64dd17)';
+                    
+                    // Скрываем уведомление через 5 секунд
+                    setTimeout(() => {
+                        telegramConnectedElement.style.display = 'none';
+                    }, 5000);
+                } else {
+                    throw new Error(data.description || 'Ошибка отправки сообщения');
                 }
-            }, 2000);
-        }
-        
-        // Имитация отправки сообщения в Telegram
-        function simulateTelegramMessage() {
-            // В реальном приложении здесь был бы запрос к Telegram API
-            console.log("Сообщение отправлено в Telegram: Привет! Вы успешно подключили бота напоминаний. В выбранную дату вы получите сообщение 'Как результат?'");
-            
-            // Показываем имитацию уведомления
-            alert("Сообщение от бота: Привет! Вы успешно подключили бота напоминаний. В выбранную дату вы получите сообщение 'Как результат?'");
-        }
-        
-        // Отправка напоминания на сервер
-        function sendReminderToServer() {
-            // В реальном приложении здесь был бы запрос к серверу
-            console.log(`Напоминание установлено на дату: ${selectedDate.toLocaleDateString()}`);
-            
-            // Имитируем отправку запроса
-            fetch('https://jsonplaceholder.typicode.com/posts', {
-                method: 'POST',
-                body: JSON.stringify({
-                    date: selectedDate.toISOString().split('T')[0],
-                    message: "Как результат?",
-                    userId: "user123" // В реальном приложении здесь был бы ID пользователя
-                }),
-                headers: {
-                    'Content-type': 'application/json; charset=UTF-8',
-                },
-            })
-            .then(response => response.json())
-            .then(json => console.log("Напоминание сохранено на сервере:", json))
-            .catch(error => console.error("Ошибка при сохранении напоминания:", error));
+                
+            } catch (error) {
+                console.error('Ошибка:', error);
+                alert('Ошибка отправки сообщения: ' + error.message);
+                connectTelegramBtn.disabled = false;
+                connectTelegramBtn.innerHTML = '<i class="fab fa-telegram"></i> Отправить тестовое сообщение';
+            }
         }
         
         // Переключение месяцев
@@ -443,7 +478,7 @@
         });
         
         // Обработчик кнопки подключения Telegram
-        connectTelegramBtn.addEventListener('click', connectTelegram);
+        connectTelegramBtn.addEventListener('click', sendTelegramMessage);
         
         // Инициализация при загрузке страницы
         initCalendar();
