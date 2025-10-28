@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Таймер</title>
+    <title>Календарь</title>
     <style>
         * {
             margin: 0;
@@ -24,7 +24,7 @@
         
         .container {
             text-align: center;
-            max-width: 300px;
+            max-width: 350px;
         }
         
         .btn {
@@ -37,173 +37,243 @@
             cursor: pointer;
             margin: 20px 0;
             width: 100%;
+            transition: all 0.3s;
         }
         
         .btn:hover {
             background: #0066aa;
+            transform: translateY(-2px);
         }
         
-        .info {
-            color: #ccc;
+        .instructions {
+            background: rgba(255,255,255,0.1);
+            padding: 20px;
+            border-radius: 10px;
+            margin-top: 20px;
+            text-align: left;
+        }
+        
+        .step {
+            margin: 10px 0;
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+        }
+        
+        .step-number {
+            background: #0088cc;
+            width: 25px;
+            height: 25px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
             font-size: 14px;
-            margin-top: 10px;
-            line-height: 1.4;
+            flex-shrink: 0;
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>⏰</h1>
-        <button class="btn" onclick="openUniversalTimer()">Открыть таймер</button>
-        <div class="info">
-            Нажмите кнопку чтобы открыть таймер на вашем устройстве
+        <h1>📅</h1>
+        <button class="btn" onclick="openCalendar()">Открыть календарь</button>
+        
+        <div class="instructions">
+            <div class="step">
+                <div class="step-number">1</div>
+                <div>Нажмите кнопку выше</div>
+            </div>
+            <div class="step">
+                <div class="step-number">2</div>
+                <div>Откроется приложение "Календарь"</div>
+            </div>
+            <div class="step">
+                <div class="step-number">3</div>
+                <div>Создайте событие на нужную дату</div>
+            </div>
+            <div class="step">
+                <div class="step-number">4</div>
+                <div>Название: <strong>"Как результат?"</strong></div>
+            </div>
         </div>
     </div>
 
     <script>
-        function openUniversalTimer() {
-            // Все возможные схемы URL для таймеров
-            const timerSchemes = [
-                // iOS
-                'clock-timer://',
-                'clocks://timer',
-                'x-apple-clock://timer',
-                
-                // Android общие
-                'clock://timer',
-                'alarm://timer',
-                
-                // Samsung
-                'com.sec.android.app.clockpackage://timer',
-                'com.samsung.sec.android.clockpackage://timer',
-                
-                // Google Clock
-                'com.google.android.deskclock://timer',
-                
-                // Huawei
-                'com.huawei.android.timer://timer',
-                'com.huawei.desktop.timer://timer',
-                
-                // Xiaomi
-                'com.android.deskclock://timer',
-                'com.miui.clock://timer',
-                
-                // Windows
-                'ms-clock://timer',
-                'alarms://',
-                
-                // macOS
-                'x-apple-clock://',
-                
-                // Linux
-                'alarm-clock://',
-                
-                // Универсальные веб-таймеры
-                'https://timer.google.com',
-                'https://timer.online',
-                'https://vclock.com/timer'
-            ];
-
-            let opened = false;
-
-            // Пробуем все схемы по очереди
-            timerSchemes.forEach(scheme => {
-                if (!opened) {
-                    try {
-                        if (scheme.startsWith('http')) {
-                            // Для веб-ссылок открываем в новой вкладке
-                            window.open(scheme, '_blank');
-                        } else {
-                            // Для deep links меняем location
-                            window.location.href = scheme;
-                        }
-                        opened = true;
-                    } catch (e) {
-                        // Продолжаем пробовать следующую схему
-                    }
-                }
-            });
-
-            // Если ничего не сработало, показываем инструкцию
-            setTimeout(() => {
-                if (!opened) {
-                    showUniversalInstructions();
-                }
-            }, 500);
-        }
-
-        function showUniversalInstructions() {
+        function openCalendar() {
             const userAgent = navigator.userAgent.toLowerCase();
             
-            let instructions = '';
-            
             if (userAgent.includes('iphone') || userAgent.includes('ipad')) {
-                instructions = 
-                    '📱 Для iPhone/iPad:\n\n' +
-                    '1. Откройте приложение "Часы"\n' +
-                    '2. Нажмите вкладку "Таймер"\n' +
-                    '3. Установите: 5 дней (120 часов)\n' +
-                    '4. Название: "Как результат?"\n' +
-                    '5. Нажмите "Запустить"';
-                    
+                openIOSCalendar();
             } else if (userAgent.includes('android')) {
-                instructions = 
-                    '📱 Для Android:\n\n' +
-                    '1. Откройте приложение "Часы"\n' +
-                    '2. Нажмите "Таймер"\n' +
-                    '3. Установите: 120 часов 00 минут\n' +
-                    '4. Название: "Как результат?"\n' +
-                    '5. Нажмите "Запустить"';
-                    
-            } else if (userAgent.includes('mac')) {
-                instructions = 
-                    '💻 Для Mac:\n\n' +
-                    '1. Нажмите Command + Пробел\n' +
-                    '2. Введите "Таймер" и нажмите Enter\n' +
-                    '3. Установите: 120 часов\n' +
-                    '4. Название: "Как результат?"\n' +
-                    '5. Нажмите "Запустить"';
-                    
-            } else if (userAgent.includes('windows')) {
-                instructions = 
-                    '💻 Для Windows:\n\n' +
-                    '1. Нажмите Win + S\n' +
-                    '2. Введите "Будильники и часы"\n' +
-                    '3. Нажмите "Таймер"\n' +
-                    '4. Установите: 120 часов 00 минут\n' +
-                    '5. Название: "Как результат?"\n' +
-                    '6. Нажмите "Запустить"';
-                    
+                openAndroidCalendar();
             } else {
-                instructions = 
-                    '🖥️ Универсальная инструкция:\n\n' +
-                    '1. Откройте приложение "Часы" или "Таймер" на вашем устройстве\n' +
-                    '2. Установите таймер на 5 дней (120 часов)\n' +
-                    '3. Назовите таймер: "Как результат?"\n' +
-                    '4. Запустите таймер\n\n' +
-                    '⏰ Таймер сработает даже если закрыть браузер!';
+                openDesktopCalendar();
             }
-
-            alert(instructions);
         }
 
-        // Дополнительная попытка через Web Share API
-        function tryWebShare() {
-            if (navigator.share) {
-                navigator.share({
-                    title: 'Установите таймер: Как результат?',
-                    text: 'Установите таймер на 5 дней (120 часов) с названием "Как результат?"',
-                    url: window.location.href
-                }).catch(() => {
-                    openUniversalTimer();
+        function openIOSCalendar() {
+            const confirmed = confirm(
+                '📱 Открыть приложение "Календарь" на iPhone?\n\n' +
+                'Нажмите "Открыть" чтобы перейти в календарь'
+            );
+            
+            if (confirmed) {
+                // Схемы для iOS Calendar
+                const iosSchemes = [
+                    'calshow://',
+                    'x-apple-calevent://',
+                    'calendar://'
+                ];
+                
+                let opened = false;
+                iosSchemes.forEach(scheme => {
+                    if (!opened) {
+                        window.location.href = scheme;
+                        opened = true;
+                    }
                 });
-            } else {
-                openUniversalTimer();
+                
+                setTimeout(() => {
+                    showCalendarInstructions('iPhone');
+                }, 1000);
             }
         }
 
-        // Обновляем функцию основной кнопки
-        document.querySelector('.btn').onclick = tryWebShare;
+        function openAndroidCalendar() {
+            const confirmed = confirm(
+                '📱 Открыть приложение "Календарь" на Android?\n\n' +
+                'Нажмите "Открыть" чтобы перейти в календарь'
+            );
+            
+            if (confirmed) {
+                // Схемы для Android Calendar
+                const androidSchemes = [
+                    'content://com.android.calendar/time/',
+                    'com.google.android.calendar://',
+                    'com.android.calendar://',
+                    'com.samsung.android.calendar://',
+                    'com.huawei.calendar://'
+                ];
+                
+                let opened = false;
+                androidSchemes.forEach(scheme => {
+                    if (!opened) {
+                        window.location.href = scheme;
+                        opened = true;
+                    }
+                });
+                
+                setTimeout(() => {
+                    showCalendarInstructions('Android');
+                }, 1000);
+            }
+        }
+
+        function openDesktopCalendar() {
+            const confirmed = confirm(
+                '💻 Открыть приложение "Календарь"?\n\n' +
+                'Нажмите "Открыть" чтобы перейти в календарь'
+            );
+            
+            if (confirmed) {
+                // Для Windows
+                if (navigator.userAgent.includes('Windows')) {
+                    window.location.href = 'outlookcal://';
+                }
+                // Для Mac
+                else if (navigator.userAgent.includes('Mac')) {
+                    window.location.href = 'webcal://';
+                }
+                
+                setTimeout(() => {
+                    showCalendarInstructions('компьютера');
+                }, 1000);
+            }
+        }
+
+        function showCalendarInstructions(deviceType) {
+            alert(
+                `📅 Инструкция для ${deviceType}:\n\n` +
+                '1. ✏️ Нажмите "Создать событие" или "+"\n' +
+                '2. 📝 Название: "Как результат?"\n' +
+                '3. 📅 Выберите дату через 5 дней\n' +
+                '4. ⏰ Установите время напоминания\n' +
+                '5. ✅ Сохраните событие\n\n' +
+                '🔔 Напоминание придет в указанную дату!'
+            );
+            
+            // Обновляем инструкции на странице
+            document.querySelector('.instructions').innerHTML = `
+                <div style="text-align: center; margin-bottom: 15px;">
+                    <strong>✅ Инструкция получена!</strong>
+                </div>
+                <div class="step">
+                    <div class="step-number">1</div>
+                    <div>Нажмите <strong>"Создать событие"</strong></div>
+                </div>
+                <div class="step">
+                    <div class="step-number">2</div>
+                    <div>Название: <strong>"Как результат?"</strong></div>
+                </div>
+                <div class="step">
+                    <div class="step-number">3</div>
+                    <div>Дата: <strong>через 5 дней</strong></div>
+                </div>
+                <div class="step">
+                    <div class="step-number">4</div>
+                    <div>Установите <strong>напоминание</strong></div>
+                </div>
+                <div class="step">
+                    <div class="step-number">5</div>
+                    <div>Нажмите <strong>"Сохранить"</strong></div>
+                </div>
+            `;
+        }
+
+        // Альтернатива: открытие нативного выбора даты
+        function openNativeDatePicker() {
+            const input = document.createElement('input');
+            input.type = 'date';
+            input.style.position = 'fixed';
+            input.style.top = '-100px';
+            document.body.appendChild(input);
+            
+            input.click();
+            
+            input.addEventListener('change', function() {
+                const selectedDate = new Date(this.value);
+                alert(`Вы выбрали дату: ${selectedDate.toLocaleDateString('ru-RU')}\n\nСоздайте событие в календаре с названием "Как результат?"`);
+                document.body.removeChild(input);
+            });
+            
+            setTimeout(() => {
+                if (document.body.contains(input)) {
+                    document.body.removeChild(input);
+                }
+            }, 10000);
+        }
+
+        // Добавляем альтернативную кнопку
+        function addAlternativeButton() {
+            const altBtn = document.createElement('button');
+            altBtn.className = 'btn';
+            altBtn.style.background = '#28a745';
+            altBtn.style.marginTop = '10px';
+            altBtn.textContent = 'Выбрать дату';
+            altBtn.onclick = openNativeDatePicker;
+            
+            document.querySelector('.btn').parentNode.insertBefore(altBtn, document.querySelector('.btn').nextSibling);
+            
+            // Обновляем инструкции
+            document.querySelector('.instructions').innerHTML += `
+                <div style="margin-top: 15px; text-align: center; color: #ccc;">
+                    или используйте кнопку "Выбрать дату"
+                </div>
+            `;
+        }
+
+        // Инициализация
+        addAlternativeButton();
     </script>
 </body>
 </html>
