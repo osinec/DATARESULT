@@ -22,496 +22,275 @@
             justify-content: center;
             align-items: center;
             padding: 20px;
+            text-align: center;
         }
 
         .container {
-            text-align: center;
             max-width: 400px;
             width: 100%;
             background: rgba(255, 255, 255, 0.05);
             border-radius: 20px;
-            padding: 30px;
+            padding: 40px 30px;
             box-shadow: 0 15px 30px rgba(0, 0, 0, 0.5);
             border: 1px solid rgba(255, 255, 255, 0.1);
         }
 
         h1 {
-            margin-bottom: 30px;
+            margin-bottom: 40px;
             font-weight: 300;
             color: #e0e0e0;
-            font-size: 2.2rem;
-        }
-
-        .calendar {
-            width: 100%;
-            background: rgba(255, 255, 255, 0.07);
-            border-radius: 15px;
-            padding: 20px;
-            border: 1px solid rgba(100, 255, 218, 0.3);
-            margin-bottom: 20px;
-        }
-
-        .calendar-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 15px;
-            padding: 0 10px;
-        }
-
-        .calendar-header button {
-            background: transparent;
-            border: none;
-            color: #64ffda;
-            font-size: 1.2rem;
-            cursor: pointer;
-            padding: 8px 12px;
-            border-radius: 8px;
-            transition: all 0.3s ease;
-        }
-
-        .calendar-header button:hover {
-            background: rgba(100, 255, 218, 0.1);
-        }
-
-        .calendar-grid {
-            display: grid;
-            grid-template-columns: repeat(7, 1fr);
-            gap: 4px;
-        }
-
-        .calendar-day {
-            padding: 8px 4px;
-            text-align: center;
-            font-weight: 500;
-            color: rgba(255, 255, 255, 0.5);
-            font-size: 0.8rem;
-        }
-
-        .calendar-date {
-            padding: 10px 4px;
-            text-align: center;
-            cursor: pointer;
-            border-radius: 8px;
-            transition: all 0.3s ease;
-            font-size: 0.9rem;
-        }
-
-        .calendar-date:hover {
-            background: rgba(100, 255, 218, 0.1);
-        }
-
-        .calendar-date.selected {
-            background: rgba(100, 255, 218, 0.2);
-            color: #64ffda;
-            font-weight: bold;
-        }
-
-        .calendar-date.other-month {
-            color: rgba(255, 255, 255, 0.3);
-        }
-
-        .calendar-date.today {
-            color: #64ffda;
-            font-weight: bold;
-        }
-
-        .selected-date {
-            font-size: 1.3rem;
-            color: #64ffda;
-            margin: 20px 0;
-            padding: 15px;
-            background: rgba(100, 255, 218, 0.1);
-            border-radius: 12px;
-            border: 2px solid rgba(100, 255, 218, 0.3);
-            min-height: 60px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
+            font-size: 2.5rem;
         }
 
         .reminder-btn {
             background: linear-gradient(135deg, #00c853, #64dd17);
             color: white;
             border: none;
-            padding: 16px 30px;
-            border-radius: 12px;
+            padding: 25px 30px;
+            border-radius: 20px;
             cursor: pointer;
-            font-size: 1.2rem;
+            font-size: 1.4rem;
             font-weight: 500;
             display: flex;
+            flex-direction: column;
             align-items: center;
             justify-content: center;
-            gap: 12px;
-            margin: 20px auto;
+            gap: 15px;
+            margin: 30px auto;
             transition: all 0.3s ease;
-            box-shadow: 0 5px 20px rgba(0, 200, 83, 0.3);
+            box-shadow: 0 5px 25px rgba(0, 200, 83, 0.3);
             width: 100%;
         }
 
         .reminder-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 25px rgba(0, 200, 83, 0.4);
+            transform: translateY(-3px);
+            box-shadow: 0 8px 30px rgba(0, 200, 83, 0.4);
         }
 
-        .reminder-btn:disabled {
-            background: rgba(255, 255, 255, 0.1);
-            cursor: not-allowed;
-            transform: none;
-            box-shadow: none;
+        .reminder-btn:active {
+            transform: scale(0.98);
         }
 
-        .modal {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.9);
-            z-index: 1000;
-            justify-content: center;
-            align-items: center;
+        .btn-icon {
+            font-size: 3rem;
         }
 
-        .modal-content {
-            background: linear-gradient(135deg, #1a1a2e, #16213e);
-            padding: 30px;
-            border-radius: 20px;
-            text-align: center;
-            max-width: 350px;
-            width: 90%;
-            border: 2px solid #64ffda;
+        .btn-text {
+            font-size: 1.3rem;
         }
 
-        .modal h2 {
-            color: #64ffda;
-            margin-bottom: 20px;
-            font-size: 1.4rem;
-        }
-
-        .modal-btn {
-            background: linear-gradient(135deg, #0088cc, #34b7f1);
-            color: white;
-            border: none;
-            padding: 12px 25px;
-            border-radius: 8px;
-            cursor: pointer;
+        .instructions {
+            color: rgba(255, 255, 255, 0.7);
             font-size: 1rem;
+            line-height: 1.5;
             margin-top: 20px;
-            width: 100%;
+        }
+
+        .success-message {
+            margin-top: 20px;
+            padding: 15px;
+            background: rgba(0, 200, 83, 0.1);
+            border-radius: 10px;
+            border: 1px solid rgba(0, 200, 83, 0.3);
+            color: #64ffda;
+            display: none;
         }
 
         @media (max-width: 480px) {
             .container {
-                padding: 20px;
+                padding: 30px 20px;
             }
             
             h1 {
-                font-size: 1.8rem;
-                margin-bottom: 20px;
-            }
-            
-            .calendar {
-                padding: 15px;
-            }
-            
-            .calendar-date {
-                padding: 8px 2px;
-                font-size: 0.8rem;
+                font-size: 2rem;
+                margin-bottom: 30px;
             }
             
             .reminder-btn {
-                padding: 14px 20px;
-                font-size: 1.1rem;
+                padding: 22px 25px;
+                font-size: 1.2rem;
+            }
+            
+            .btn-icon {
+                font-size: 2.5rem;
             }
         }
     </style>
 </head>
 <body>
-    <!-- Модальное окно подтверждения -->
-    <div class="modal" id="confirmationModal">
-        <div class="modal-content">
-            <h2><i class="fas fa-check-circle"></i> Готово</h2>
-            <p>Уведомление придёт</p>
-            <div style="font-size: 1.5rem; color: #64ffda; margin: 15px 0;">
-                <span id="modalDate"></span>
-            </div>
-            <p>Не закрывайте эту страницу</p>
-            <button class="modal-btn" onclick="closeModal()">
-                OK
-            </button>
-        </div>
-    </div>
-
-    <!-- Модальное окно напоминания -->
-    <div class="modal" id="reminderModal">
-        <div class="modal-content">
-            <h2><i class="fas fa-bell"></i> Напоминание</h2>
-            <div style="font-size: 2rem; margin: 20px 0; color: #64ffda;">
-                Как результат?
-            </div>
-            <button class="modal-btn" onclick="closeReminderModal()">
-                OK
-            </button>
-        </div>
-    </div>
-
     <div class="container">
         <h1><i class="fas fa-bell"></i></h1>
         
-        <div class="calendar">
-            <div class="calendar-header">
-                <button id="prevMonth"><i class="fas fa-chevron-left"></i></button>
-                <h2 id="currentMonth">Месяц Год</h2>
-                <button id="nextMonth"><i class="fas fa-chevron-right"></i></button>
+        <button class="reminder-btn" id="reminderBtn">
+            <div class="btn-icon">
+                <i class="fas fa-clock"></i>
             </div>
-            <div class="calendar-grid" id="calendarGrid">
-                <!-- Календарь будет здесь -->
+            <div class="btn-text">
+                Установить напоминание
             </div>
-        </div>
-        
-        <div class="selected-date" id="selectedDate">
-            Выберите дату
-        </div>
-        
-        <button class="reminder-btn" id="reminderBtn" disabled>
-            <i class="fas fa-plus-circle"></i> Установить напоминание
         </button>
+
+        <div class="instructions">
+            Нажмите кнопку чтобы открыть будильник на вашем телефоне
+        </div>
+
+        <div class="success-message" id="successMessage">
+            <i class="fas fa-check-circle"></i> Будильник открыт! Установите напоминание на 5 дней
+        </div>
     </div>
 
     <script>
-        // Элементы DOM
         const reminderBtn = document.getElementById('reminderBtn');
-        const selectedDateElement = document.getElementById('selectedDate');
-        const calendarGrid = document.getElementById('calendarGrid');
-        const currentMonthElement = document.getElementById('currentMonth');
-        const prevMonthBtn = document.getElementById('prevMonth');
-        const nextMonthBtn = document.getElementById('nextMonth');
-        const confirmationModal = document.getElementById('confirmationModal');
-        const reminderModal = document.getElementById('reminderModal');
-        const modalDate = document.getElementById('modalDate');
+        const successMessage = document.getElementById('successMessage');
 
-        let currentDate = new Date();
-        let selectedDate = null;
-        const daysOfWeek = ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Вс'];
-
-        // Инициализация календаря
-        function initCalendar() {
-            const monthNames = [
-                'Январь', 'Февраль', 'Март', 'Апрель', 'Май', 'Июнь',
-                'Июль', 'Август', 'Сентябрь', 'Октябрь', 'Ноябрь', 'Декабрь'
-            ];
+        // Функция для открытия будильника/таймера
+        function openAlarmApp() {
+            // Рассчитываем дату через 5 дней
+            const targetDate = new Date();
+            targetDate.setDate(targetDate.getDate() + 5);
             
-            currentMonthElement.textContent = `${monthNames[currentDate.getMonth()]} ${currentDate.getFullYear()}`;
-            
-            calendarGrid.innerHTML = '';
-            
-            // Добавляем дни недели
-            daysOfWeek.forEach(day => {
-                const dayElement = document.createElement('div');
-                dayElement.className = 'calendar-day';
-                dayElement.textContent = day;
-                calendarGrid.appendChild(dayElement);
+            const formattedDate = targetDate.toLocaleDateString('ru-RU', {
+                day: 'numeric',
+                month: 'long',
+                year: 'numeric'
             });
-            
-            // Получаем первый день месяца и количество дней
-            const firstDay = new Date(currentDate.getFullYear(), currentDate.getMonth(), 1);
-            const lastDay = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 0);
-            const daysInMonth = lastDay.getDate();
-            
-            let firstDayOfWeek = firstDay.getDay();
-            firstDayOfWeek = firstDayOfWeek === 0 ? 6 : firstDayOfWeek - 1;
-            
-            // Пустые ячейки предыдущего месяца
-            for (let i = 0; i < firstDayOfWeek; i++) {
-                const emptyCell = document.createElement('div');
-                emptyCell.className = 'calendar-date other-month';
-                calendarGrid.appendChild(emptyCell);
-            }
-            
-            // Дни текущего месяца
-            const today = new Date();
-            for (let day = 1; day <= daysInMonth; day++) {
-                const dateElement = document.createElement('div');
-                dateElement.className = 'calendar-date';
-                dateElement.textContent = day;
-                
-                // Сегодняшняя дата
-                if (currentDate.getMonth() === today.getMonth() && 
-                    currentDate.getFullYear() === today.getFullYear() && 
-                    day === today.getDate()) {
-                    dateElement.classList.add('today');
-                }
-                
-                // Выбранная дата
-                if (selectedDate && 
-                    currentDate.getMonth() === selectedDate.getMonth() && 
-                    currentDate.getFullYear() === selectedDate.getFullYear() && 
-                    day === selectedDate.getDate()) {
-                    dateElement.classList.add('selected');
-                }
-                
-                dateElement.addEventListener('click', () => {
-                    selectDate(day);
-                });
-                
-                calendarGrid.appendChild(dateElement);
-            }
-        }
 
-        // Выбор даты
-        function selectDate(day) {
-            selectedDate = new Date(currentDate.getFullYear(), currentDate.getMonth(), day);
-            
-            const dateOptions = { day: 'numeric', month: 'long', year: 'numeric' };
-            selectedDateElement.textContent = selectedDate.toLocaleDateString('ru-RU', dateOptions);
-            
-            // Активируем кнопку
-            reminderBtn.disabled = false;
-            
-            initCalendar();
-        }
-
-        // Показать модальное окно подтверждения
-        function showConfirmationModal() {
-            const dateOptions = { day: 'numeric', month: 'long', year: 'numeric' };
-            modalDate.textContent = selectedDate.toLocaleDateString('ru-RU', dateOptions);
-            confirmationModal.style.display = 'flex';
-        }
-
-        // Закрыть модальное окно
-        function closeModal() {
-            confirmationModal.style.display = 'none';
-        }
-
-        // Показать модальное окно напоминания
-        function showReminderModal() {
-            reminderModal.style.display = 'flex';
-        }
-
-        // Закрыть модальное окно напоминания
-        function closeReminderModal() {
-            reminderModal.style.display = 'none';
-        }
-
-        // Автоматически запрашиваем разрешение при загрузке
-        function autoRequestPermission() {
-            if ("Notification" in window) {
-                Notification.requestPermission();
-            }
-        }
-
-        // Установка напоминания
-        function setReminder() {
-            if (!selectedDate) return;
-            
-            const reminder = {
-                id: Date.now(),
-                date: selectedDate.toISOString().split('T')[0],
-                timestamp: selectedDate.getTime(),
-                message: "Как результат?",
-                created: new Date().toISOString(),
-                status: 'active'
-            };
-
-            // Сохраняем напоминание
-            saveReminder(reminder);
-
-            // Показываем модальное окно подтверждения
-            showConfirmationModal();
-
-            // Показываем тестовое уведомление
-            showTestNotification();
-        }
-
-        // Сохранение напоминания
-        function saveReminder(reminder) {
-            let reminders = JSON.parse(localStorage.getItem('autoReminders') || '[]');
-            reminders.push(reminder);
-            localStorage.setItem('autoReminders', JSON.stringify(reminders));
-        }
-
-        // Тестовое уведомление
-        function showTestNotification() {
-            if (Notification.permission === "granted") {
-                const dateOptions = { day: 'numeric', month: 'long', year: 'numeric' };
-                new Notification("✓ Напоминание установлено", {
-                    body: `Придёт ${selectedDate.toLocaleDateString('ru-RU', dateOptions)}`,
-                    icon: "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⏰</text></svg>"
-                });
-            }
-        }
-
-        // Проверка напоминаний
-        function checkReminders() {
-            const now = Date.now();
-            let reminders = JSON.parse(localStorage.getItem('autoReminders') || '[]');
-
-            reminders.forEach(reminder => {
-                if (reminder.status === 'active' && reminder.timestamp <= now) {
-                    // Показываем уведомление
-                    showReminderNotification(reminder);
+            // Пытаемся открыть приложение будильника
+            try {
+                // Для Android
+                if (/Android/.test(navigator.userAgent)) {
+                    // Пробуем разные схемы URL для Android
+                    const schemes = [
+                        'alarm://',
+                        'clock://',
+                        'com.sec.android.app.clockpackage://',
+                        'com.google.android.deskclock://',
+                        'intent://clock/#Intent;package=com.google.android.deskclock;end'
+                    ];
                     
-                    // Помечаем как выполненное
-                    reminder.status = 'completed';
+                    let opened = false;
+                    schemes.forEach(scheme => {
+                        if (!opened) {
+                            const link = document.createElement('a');
+                            link.href = scheme;
+                            link.click();
+                            opened = true;
+                        }
+                    });
+                    
+                    if (!opened) {
+                        // Если не получилось открыть приложение, показываем инструкцию
+                        showManualInstruction(formattedDate);
+                    }
                 }
-            });
-
-            if (reminders.length > 0) {
-                localStorage.setItem('autoReminders', JSON.stringify(reminders));
-            }
-        }
-
-        // Показать уведомление о напоминании
-        function showReminderNotification(reminder) {
-            // Браузерное уведомление
-            if (Notification.permission === "granted") {
-                new Notification("⏰ Напоминание", {
-                    body: reminder.message
-                });
-            }
-
-            // Модальное окно на сайте
-            showReminderModal();
-        }
-
-        // Предупреждение при закрытии
-        function setupCloseWarning() {
-            window.addEventListener('beforeunload', function (e) {
-                const activeReminders = JSON.parse(localStorage.getItem('autoReminders') || '[]')
-                    .filter(r => r.status === 'active');
+                // Для iOS
+                else if (/iPhone|iPad|iPod/.test(navigator.userAgent)) {
+                    // Пробуем схемы URL для iOS
+                    const schemes = [
+                        'clock-alarm://',
+                        'clocks://',
+                        'x-apple-clock://'
+                    ];
+                    
+                    let opened = false;
+                    schemes.forEach(scheme => {
+                        if (!opened) {
+                            window.location.href = scheme;
+                            opened = true;
+                        }
+                    });
+                    
+                    if (!opened) {
+                        showManualInstruction(formattedDate);
+                    }
+                }
+                // Для других устройств
+                else {
+                    showManualInstruction(formattedDate);
+                }
                 
-                if (activeReminders.length > 0) {
-                    e.preventDefault();
-                    e.returnValue = '';
-                }
-            });
+                // Показываем сообщение об успехе
+                showSuccessMessage();
+                
+            } catch (error) {
+                console.error('Ошибка:', error);
+                showManualInstruction(formattedDate);
+            }
         }
 
-        // Инициализация
-        initCalendar();
-        autoRequestPermission();
-        setupCloseWarning();
+        // Показать инструкцию для ручной установки
+        function showManualInstruction(date) {
+            const message = `Не удалось автоматически открыть будильник.\n\nПожалуйста:\n1. Откройте приложение "Часы" или "Будильник" на вашем телефоне\n2. Установите будильник или напоминание на дату:\n${date}\n3. Назовите напоминание: "Как результат?"`;
+            alert(message);
+        }
 
-        // Обработчики событий
-        reminderBtn.addEventListener('click', setReminder);
-        
-        prevMonthBtn.addEventListener('click', () => {
-            currentDate.setMonth(currentDate.getMonth() - 1);
-            initCalendar();
-        });
-        
-        nextMonthBtn.addEventListener('click', () => {
-            currentDate.setMonth(currentDate.getMonth() + 1);
-            initCalendar();
-        });
+        // Показать сообщение об успехе
+        function showSuccessMessage() {
+            successMessage.style.display = 'block';
+            setTimeout(() => {
+                successMessage.style.display = 'none';
+            }, 5000);
+        }
 
-        // Проверяем напоминания каждую минуту
-        setInterval(checkReminders, 60000);
-        
-        // Проверяем сразу при загрузке
-        checkReminders();
+        // Обработчик клика по кнопке
+        reminderBtn.addEventListener('click', openAlarmApp);
+
+        // Альтернативный метод - создание события в календаре
+        function createCalendarEvent() {
+            const startDate = new Date();
+            startDate.setDate(startDate.getDate() + 5);
+            const endDate = new Date(startDate.getTime() + 30 * 60 * 1000); // +30 минут
+            
+            const event = {
+                title: 'Как результат?',
+                start: startDate.toISOString(),
+                end: endDate.toISOString(),
+                description: 'Напоминание установлено через сайт'
+            };
+            
+            // Пробуем создать событие в календаре
+            if (navigator.share) {
+                navigator.share({
+                    title: event.title,
+                    text: event.description,
+                    url: window.location.href
+                }).then(() => {
+                    showSuccessMessage();
+                }).catch(() => {
+                    openAlarmApp(); // Если не получилось, открываем будильник
+                });
+            } else {
+                openAlarmApp();
+            }
+        }
+
+        // Дополнительная кнопка для календаря (опционально)
+        function addCalendarButton() {
+            const calendarBtn = document.createElement('button');
+            calendarBtn.className = 'reminder-btn';
+            calendarBtn.style.background = 'linear-gradient(135deg, #ff4081, #f50057)';
+            calendarBtn.style.marginTop = '10px';
+            calendarBtn.innerHTML = `
+                <div class="btn-icon">
+                    <i class="fas fa-calendar-plus"></i>
+                </div>
+                <div class="btn-text">
+                    Добавить в календарь
+                </div>
+            `;
+            calendarBtn.onclick = createCalendarEvent;
+            
+            reminderBtn.parentNode.insertBefore(calendarBtn, reminderBtn.nextSibling);
+            
+            // Обновляем инструкцию
+            document.querySelector('.instructions').textContent = 
+                'Выберите способ напоминания: будильник или календарь';
+        }
+
+        // Проверяем поддержку Web Share API и добавляем кнопку календаря если поддерживается
+        if (navigator.share) {
+            addCalendarButton();
+        }
     </script>
 </body>
 </html>
