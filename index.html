@@ -3,326 +3,207 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Напоминание</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <title>Таймер</title>
     <style>
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            font-family: Arial, sans-serif;
         }
-
+        
         body {
-            background: linear-gradient(135deg, #0c0c0c, #1a1a2e);
-            color: #fff;
+            background: #1a1a2e;
+            color: white;
             min-height: 100vh;
             display: flex;
-            flex-direction: column;
             justify-content: center;
             align-items: center;
             padding: 20px;
-            text-align: center;
         }
-
+        
         .container {
-            max-width: 400px;
-            width: 100%;
-            background: rgba(255, 255, 255, 0.05);
-            border-radius: 20px;
-            padding: 40px 30px;
-            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.5);
-            border: 1px solid rgba(255, 255, 255, 0.1);
+            text-align: center;
+            max-width: 300px;
         }
-
-        h1 {
-            margin-bottom: 40px;
-            font-weight: 300;
-            color: #e0e0e0;
-            font-size: 2.5rem;
-        }
-
-        .reminder-btn {
-            background: linear-gradient(135deg, #00c853, #64dd17);
+        
+        .btn {
+            background: #0088cc;
             color: white;
             border: none;
             padding: 25px 30px;
-            border-radius: 20px;
+            font-size: 20px;
+            border-radius: 15px;
             cursor: pointer;
-            font-size: 1.4rem;
-            font-weight: 500;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            gap: 15px;
-            margin: 30px auto;
-            transition: all 0.3s ease;
-            box-shadow: 0 5px 25px rgba(0, 200, 83, 0.3);
+            margin: 20px 0;
             width: 100%;
         }
-
-        .reminder-btn:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 8px 30px rgba(0, 200, 83, 0.4);
+        
+        .btn:hover {
+            background: #0066aa;
         }
-
-        .btn-icon {
-            font-size: 3rem;
-        }
-
-        .btn-text {
-            font-size: 1.3rem;
-        }
-
-        .instructions {
-            color: rgba(255, 255, 255, 0.7);
-            font-size: 1rem;
-            line-height: 1.5;
-            margin-top: 20px;
-        }
-
-        .date-display {
-            font-size: 1.3rem;
-            color: #64ffda;
-            margin: 20px 0;
-            padding: 15px;
-            background: rgba(100, 255, 218, 0.1);
-            border-radius: 12px;
-            border: 2px solid rgba(100, 255, 218, 0.3);
-        }
-
-        @media (max-width: 480px) {
-            .container {
-                padding: 30px 20px;
-            }
-            
-            h1 {
-                font-size: 2rem;
-                margin-bottom: 30px;
-            }
-            
-            .reminder-btn {
-                padding: 22px 25px;
-                font-size: 1.2rem;
-            }
-            
-            .btn-icon {
-                font-size: 2.5rem;
-            }
+        
+        .info {
+            color: #ccc;
+            font-size: 14px;
+            margin-top: 10px;
+            line-height: 1.4;
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1><i class="fas fa-bell"></i></h1>
-        
-        <div class="date-display" id="dateDisplay">
-            Расчет даты...
-        </div>
-        
-        <button class="reminder-btn" id="reminderBtn">
-            <div class="btn-icon">
-                <i class="fas fa-calendar-plus"></i>
-            </div>
-            <div class="btn-text">
-                Добавить в календарь
-            </div>
-        </button>
-
-        <div class="instructions" id="instructions">
-            Нажмите кнопку чтобы добавить напоминание в календарь
+        <h1>⏰</h1>
+        <button class="btn" onclick="openUniversalTimer()">Открыть таймер</button>
+        <div class="info">
+            Нажмите кнопку чтобы открыть таймер на вашем устройстве
         </div>
     </div>
 
     <script>
-        const reminderBtn = document.getElementById('reminderBtn');
-        const dateDisplay = document.getElementById('dateDisplay');
-        const instructions = document.getElementById('instructions');
-
-        // Рассчитываем дату через 5 дней
-        function calculateReminderDate() {
-            const date = new Date();
-            date.setDate(date.getDate() + 5);
-            return {
-                date: date,
-                readable: date.toLocaleDateString('ru-RU', {
-                    day: 'numeric',
-                    month: 'long',
-                    year: 'numeric'
-                }),
-                iso: date.toISOString().split('T')[0]
-            };
-        }
-
-        // Обновляем отображение даты
-        function updateDateDisplay() {
-            const dateInfo = calculateReminderDate();
-            dateDisplay.textContent = `Напоминание на: ${dateInfo.readable}`;
-        }
-
-        // Создаем событие для календаря
-        function createCalendarEvent() {
-            const dateInfo = calculateReminderDate();
-            
-            // Форматируем даты для календаря
-            const startDate = dateInfo.date;
-            const endDate = new Date(startDate.getTime() + 30 * 60 * 1000); // +30 минут
-            
-            const formatDate = (date) => {
-                return date.toISOString().replace(/-|:|\.\d+/g, '');
-            };
-
-            // Создаем URL для события календаря
-            const title = encodeURIComponent('Как результат?');
-            const description = encodeURIComponent('Напоминание установлено через сайт');
-            const location = encodeURIComponent('');
-            
-            const start = formatDate(startDate);
-            const end = formatDate(endDate);
-
-            // Универсальные URL для разных платформ
-            const calendarUrls = {
-                // Google Calendar
-                google: `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${title}&details=${description}&location=${location}&dates=${start}/${end}`,
+        function openUniversalTimer() {
+            // Все возможные схемы URL для таймеров
+            const timerSchemes = [
+                // iOS
+                'clock-timer://',
+                'clocks://timer',
+                'x-apple-clock://timer',
                 
-                // Outlook Calendar
-                outlook: `https://outlook.live.com/calendar/0/deeplink/compose?subject=${title}&body=${description}&startdt=${startDate.toISOString()}&enddt=${endDate.toISOString()}`,
+                // Android общие
+                'clock://timer',
+                'alarm://timer',
                 
-                // Yahoo Calendar
-                yahoo: `https://calendar.yahoo.com/?v=60&view=d&type=20&title=${title}&desc=${description}&st=${formatDate(startDate)}&et=${formatDate(endDate)}`,
+                // Samsung
+                'com.sec.android.app.clockpackage://timer',
+                'com.samsung.sec.android.clockpackage://timer',
                 
-                // iCloud Calendar
-                ical: `data:text/calendar;charset=utf8,BEGIN:VCALENDAR
-VERSION:2.0
-BEGIN:VEVENT
-URL:${document.location.href}
-DTSTART:${start}
-DTEND:${end}
-SUMMARY:${title}
-DESCRIPTION:${description}
-LOCATION:${location}
-END:VEVENT
-END:VCALENDAR`
-            };
+                // Google Clock
+                'com.google.android.deskclock://timer',
+                
+                // Huawei
+                'com.huawei.android.timer://timer',
+                'com.huawei.desktop.timer://timer',
+                
+                // Xiaomi
+                'com.android.deskclock://timer',
+                'com.miui.clock://timer',
+                
+                // Windows
+                'ms-clock://timer',
+                'alarms://',
+                
+                // macOS
+                'x-apple-clock://',
+                
+                // Linux
+                'alarm-clock://',
+                
+                // Универсальные веб-таймеры
+                'https://timer.google.com',
+                'https://timer.online',
+                'https://vclock.com/timer'
+            ];
 
-            // Пробуем определить платформу и открыть соответствующий календарь
             let opened = false;
 
-            // Для мобильных устройств
-            if (/iPhone|iPad|iPod/.test(navigator.userAgent)) {
-                // iOS - пытаемся открыть стандартный календарь
-                window.location.href = 'calshow://';
-                opened = true;
-            } 
-            else if (/Android/.test(navigator.userAgent)) {
-                // Android - открываем Google Calendar
-                window.open(calendarUrls.google, '_blank');
-                opened = true;
-            }
-            else {
-                // Для десктопов - показываем выбор календаря
-                showCalendarChoice(calendarUrls, dateInfo.readable);
-                opened = true;
-            }
+            // Пробуем все схемы по очереди
+            timerSchemes.forEach(scheme => {
+                if (!opened) {
+                    try {
+                        if (scheme.startsWith('http')) {
+                            // Для веб-ссылок открываем в новой вкладке
+                            window.open(scheme, '_blank');
+                        } else {
+                            // Для deep links меняем location
+                            window.location.href = scheme;
+                        }
+                        opened = true;
+                    } catch (e) {
+                        // Продолжаем пробовать следующую схему
+                    }
+                }
+            });
 
-            // Если автоматическое открытие не сработало, показываем инструкцию
+            // Если ничего не сработало, показываем инструкцию
             setTimeout(() => {
                 if (!opened) {
-                    showManualInstruction(dateInfo.readable);
+                    showUniversalInstructions();
                 }
-            }, 1000);
+            }, 500);
         }
 
-        // Показать выбор календаря для десктопов
-        function showCalendarChoice(calendarUrls, date) {
-            const choice = confirm(
-                `Добавить напоминание на ${date}?\n\n` +
-                "Нажмите OK для Google Calendar или Отмена для инструкции"
-            );
+        function showUniversalInstructions() {
+            const userAgent = navigator.userAgent.toLowerCase();
             
-            if (choice) {
-                window.open(calendarUrls.google, '_blank');
+            let instructions = '';
+            
+            if (userAgent.includes('iphone') || userAgent.includes('ipad')) {
+                instructions = 
+                    '📱 Для iPhone/iPad:\n\n' +
+                    '1. Откройте приложение "Часы"\n' +
+                    '2. Нажмите вкладку "Таймер"\n' +
+                    '3. Установите: 5 дней (120 часов)\n' +
+                    '4. Название: "Как результат?"\n' +
+                    '5. Нажмите "Запустить"';
+                    
+            } else if (userAgent.includes('android')) {
+                instructions = 
+                    '📱 Для Android:\n\n' +
+                    '1. Откройте приложение "Часы"\n' +
+                    '2. Нажмите "Таймер"\n' +
+                    '3. Установите: 120 часов 00 минут\n' +
+                    '4. Название: "Как результат?"\n' +
+                    '5. Нажмите "Запустить"';
+                    
+            } else if (userAgent.includes('mac')) {
+                instructions = 
+                    '💻 Для Mac:\n\n' +
+                    '1. Нажмите Command + Пробел\n' +
+                    '2. Введите "Таймер" и нажмите Enter\n' +
+                    '3. Установите: 120 часов\n' +
+                    '4. Название: "Как результат?"\n' +
+                    '5. Нажмите "Запустить"';
+                    
+            } else if (userAgent.includes('windows')) {
+                instructions = 
+                    '💻 Для Windows:\n\n' +
+                    '1. Нажмите Win + S\n' +
+                    '2. Введите "Будильники и часы"\n' +
+                    '3. Нажмите "Таймер"\n' +
+                    '4. Установите: 120 часов 00 минут\n' +
+                    '5. Название: "Как результат?"\n' +
+                    '6. Нажмите "Запустить"';
+                    
             } else {
-                showManualInstruction(date);
+                instructions = 
+                    '🖥️ Универсальная инструкция:\n\n' +
+                    '1. Откройте приложение "Часы" или "Таймер" на вашем устройстве\n' +
+                    '2. Установите таймер на 5 дней (120 часов)\n' +
+                    '3. Назовите таймер: "Как результат?"\n' +
+                    '4. Запустите таймер\n\n' +
+                    '⏰ Таймер сработает даже если закрыть браузер!';
+            }
+
+            alert(instructions);
+        }
+
+        // Дополнительная попытка через Web Share API
+        function tryWebShare() {
+            if (navigator.share) {
+                navigator.share({
+                    title: 'Установите таймер: Как результат?',
+                    text: 'Установите таймер на 5 дней (120 часов) с названием "Как результат?"',
+                    url: window.location.href
+                }).catch(() => {
+                    openUniversalTimer();
+                });
+            } else {
+                openUniversalTimer();
             }
         }
 
-        // Показать инструкцию для ручной установки
-        function showManualInstruction(date) {
-            instructions.innerHTML = `
-                <strong>Инструкция:</strong><br><br>
-                1. Откройте приложение "Календарь" на вашем устройстве<br>
-                2. Создайте новое событие на дату:<br>
-                <strong>${date}</strong><br>
-                3. Установите название: <strong>"Как результат?"</strong><br>
-                4. Сохраните напоминание
-            `;
-            
-            instructions.style.background = 'rgba(255, 193, 7, 0.1)';
-            instructions.style.padding = '15px';
-            instructions.style.borderRadius = '10px';
-            instructions.style.border = '1px solid rgba(255, 193, 7, 0.3)';
-        }
-
-        // Скачать iCal файл (альтернативный метод)
-        function downloadICalFile() {
-            const dateInfo = calculateReminderDate();
-            const startDate = dateInfo.date;
-            const endDate = new Date(startDate.getTime() + 30 * 60 * 1000);
-
-            const icalContent = `BEGIN:VCALENDAR
-VERSION:2.0
-PRODID:-//Reminder App//EN
-BEGIN:VEVENT
-UID:${Date.now()}@reminderapp
-DTSTAMP:${new Date().toISOString().replace(/-|:|\.\d+/g, '')}Z
-DTSTART:${startDate.toISOString().replace(/-|:|\.\d+/g, '')}Z
-DTEND:${endDate.toISOString().replace(/-|:|\.\d+/g, '')}Z
-SUMMARY:Как результат?
-DESCRIPTION:Напоминание установлено через сайт
-END:VEVENT
-END:VCALENDAR`;
-
-            const blob = new Blob([icalContent], { type: 'text/calendar' });
-            const url = window.URL.createObjectURL(blob);
-            const link = document.createElement('a');
-            link.href = url;
-            link.download = 'напоминание.ics';
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-            window.URL.revokeObjectURL(url);
-        }
-
-        // Добавляем альтернативную кнопку для iCal
-        function addICalButton() {
-            const icalBtn = document.createElement('button');
-            icalBtn.className = 'reminder-btn';
-            icalBtn.style.background = 'linear-gradient(135deg, #ff4081, #f50057)';
-            icalBtn.style.marginTop = '10px';
-            icalBtn.innerHTML = `
-                <div class="btn-icon">
-                    <i class="fas fa-download"></i>
-                </div>
-                <div class="btn-text">
-                    Скачать файл календаря
-                </div>
-            `;
-            icalBtn.onclick = downloadICalFile;
-            
-            reminderBtn.parentNode.insertBefore(icalBtn, reminderBtn.nextSibling);
-        }
-
-        // Инициализация
-        updateDateDisplay();
-        addICalButton();
-
-        // Обработчик клика по основной кнопке
-        reminderBtn.addEventListener('click', createCalendarEvent);
-
-        // Обновляем дату каждые 10 секунд
-        setInterval(updateDateDisplay, 10000);
+        // Обновляем функцию основной кнопки
+        document.querySelector('.btn').onclick = tryWebShare;
     </script>
 </body>
 </html>
