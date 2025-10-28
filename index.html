@@ -67,10 +67,6 @@
             box-shadow: 0 8px 30px rgba(0, 200, 83, 0.4);
         }
 
-        .reminder-btn:active {
-            transform: scale(0.98);
-        }
-
         .btn-icon {
             font-size: 3rem;
         }
@@ -86,14 +82,14 @@
             margin-top: 20px;
         }
 
-        .success-message {
-            margin-top: 20px;
-            padding: 15px;
-            background: rgba(0, 200, 83, 0.1);
-            border-radius: 10px;
-            border: 1px solid rgba(0, 200, 83, 0.3);
+        .date-display {
+            font-size: 1.3rem;
             color: #64ffda;
-            display: none;
+            margin: 20px 0;
+            padding: 15px;
+            background: rgba(100, 255, 218, 0.1);
+            border-radius: 12px;
+            border: 2px solid rgba(100, 255, 218, 0.3);
         }
 
         @media (max-width: 480px) {
@@ -121,176 +117,212 @@
     <div class="container">
         <h1><i class="fas fa-bell"></i></h1>
         
+        <div class="date-display" id="dateDisplay">
+            Расчет даты...
+        </div>
+        
         <button class="reminder-btn" id="reminderBtn">
             <div class="btn-icon">
-                <i class="fas fa-clock"></i>
+                <i class="fas fa-calendar-plus"></i>
             </div>
             <div class="btn-text">
-                Установить напоминание
+                Добавить в календарь
             </div>
         </button>
 
-        <div class="instructions">
-            Нажмите кнопку чтобы открыть будильник на вашем телефоне
-        </div>
-
-        <div class="success-message" id="successMessage">
-            <i class="fas fa-check-circle"></i> Будильник открыт! Установите напоминание на 5 дней
+        <div class="instructions" id="instructions">
+            Нажмите кнопку чтобы добавить напоминание в календарь
         </div>
     </div>
 
     <script>
         const reminderBtn = document.getElementById('reminderBtn');
-        const successMessage = document.getElementById('successMessage');
+        const dateDisplay = document.getElementById('dateDisplay');
+        const instructions = document.getElementById('instructions');
 
-        // Функция для открытия будильника/таймера
-        function openAlarmApp() {
-            // Рассчитываем дату через 5 дней
-            const targetDate = new Date();
-            targetDate.setDate(targetDate.getDate() + 5);
+        // Рассчитываем дату через 5 дней
+        function calculateReminderDate() {
+            const date = new Date();
+            date.setDate(date.getDate() + 5);
+            return {
+                date: date,
+                readable: date.toLocaleDateString('ru-RU', {
+                    day: 'numeric',
+                    month: 'long',
+                    year: 'numeric'
+                }),
+                iso: date.toISOString().split('T')[0]
+            };
+        }
+
+        // Обновляем отображение даты
+        function updateDateDisplay() {
+            const dateInfo = calculateReminderDate();
+            dateDisplay.textContent = `Напоминание на: ${dateInfo.readable}`;
+        }
+
+        // Создаем событие для календаря
+        function createCalendarEvent() {
+            const dateInfo = calculateReminderDate();
             
-            const formattedDate = targetDate.toLocaleDateString('ru-RU', {
-                day: 'numeric',
-                month: 'long',
-                year: 'numeric'
-            });
+            // Форматируем даты для календаря
+            const startDate = dateInfo.date;
+            const endDate = new Date(startDate.getTime() + 30 * 60 * 1000); // +30 минут
+            
+            const formatDate = (date) => {
+                return date.toISOString().replace(/-|:|\.\d+/g, '');
+            };
 
-            // Пытаемся открыть приложение будильника
-            try {
-                // Для Android
-                if (/Android/.test(navigator.userAgent)) {
-                    // Пробуем разные схемы URL для Android
-                    const schemes = [
-                        'alarm://',
-                        'clock://',
-                        'com.sec.android.app.clockpackage://',
-                        'com.google.android.deskclock://',
-                        'intent://clock/#Intent;package=com.google.android.deskclock;end'
-                    ];
-                    
-                    let opened = false;
-                    schemes.forEach(scheme => {
-                        if (!opened) {
-                            const link = document.createElement('a');
-                            link.href = scheme;
-                            link.click();
-                            opened = true;
-                        }
-                    });
-                    
-                    if (!opened) {
-                        // Если не получилось открыть приложение, показываем инструкцию
-                        showManualInstruction(formattedDate);
-                    }
-                }
-                // Для iOS
-                else if (/iPhone|iPad|iPod/.test(navigator.userAgent)) {
-                    // Пробуем схемы URL для iOS
-                    const schemes = [
-                        'clock-alarm://',
-                        'clocks://',
-                        'x-apple-clock://'
-                    ];
-                    
-                    let opened = false;
-                    schemes.forEach(scheme => {
-                        if (!opened) {
-                            window.location.href = scheme;
-                            opened = true;
-                        }
-                    });
-                    
-                    if (!opened) {
-                        showManualInstruction(formattedDate);
-                    }
-                }
-                // Для других устройств
-                else {
-                    showManualInstruction(formattedDate);
-                }
+            // Создаем URL для события календаря
+            const title = encodeURIComponent('Как результат?');
+            const description = encodeURIComponent('Напоминание установлено через сайт');
+            const location = encodeURIComponent('');
+            
+            const start = formatDate(startDate);
+            const end = formatDate(endDate);
+
+            // Универсальные URL для разных платформ
+            const calendarUrls = {
+                // Google Calendar
+                google: `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${title}&details=${description}&location=${location}&dates=${start}/${end}`,
                 
-                // Показываем сообщение об успехе
-                showSuccessMessage();
+                // Outlook Calendar
+                outlook: `https://outlook.live.com/calendar/0/deeplink/compose?subject=${title}&body=${description}&startdt=${startDate.toISOString()}&enddt=${endDate.toISOString()}`,
                 
-            } catch (error) {
-                console.error('Ошибка:', error);
-                showManualInstruction(formattedDate);
+                // Yahoo Calendar
+                yahoo: `https://calendar.yahoo.com/?v=60&view=d&type=20&title=${title}&desc=${description}&st=${formatDate(startDate)}&et=${formatDate(endDate)}`,
+                
+                // iCloud Calendar
+                ical: `data:text/calendar;charset=utf8,BEGIN:VCALENDAR
+VERSION:2.0
+BEGIN:VEVENT
+URL:${document.location.href}
+DTSTART:${start}
+DTEND:${end}
+SUMMARY:${title}
+DESCRIPTION:${description}
+LOCATION:${location}
+END:VEVENT
+END:VCALENDAR`
+            };
+
+            // Пробуем определить платформу и открыть соответствующий календарь
+            let opened = false;
+
+            // Для мобильных устройств
+            if (/iPhone|iPad|iPod/.test(navigator.userAgent)) {
+                // iOS - пытаемся открыть стандартный календарь
+                window.location.href = 'calshow://';
+                opened = true;
+            } 
+            else if (/Android/.test(navigator.userAgent)) {
+                // Android - открываем Google Calendar
+                window.open(calendarUrls.google, '_blank');
+                opened = true;
+            }
+            else {
+                // Для десктопов - показываем выбор календаря
+                showCalendarChoice(calendarUrls, dateInfo.readable);
+                opened = true;
+            }
+
+            // Если автоматическое открытие не сработало, показываем инструкцию
+            setTimeout(() => {
+                if (!opened) {
+                    showManualInstruction(dateInfo.readable);
+                }
+            }, 1000);
+        }
+
+        // Показать выбор календаря для десктопов
+        function showCalendarChoice(calendarUrls, date) {
+            const choice = confirm(
+                `Добавить напоминание на ${date}?\n\n` +
+                "Нажмите OK для Google Calendar или Отмена для инструкции"
+            );
+            
+            if (choice) {
+                window.open(calendarUrls.google, '_blank');
+            } else {
+                showManualInstruction(date);
             }
         }
 
         // Показать инструкцию для ручной установки
         function showManualInstruction(date) {
-            const message = `Не удалось автоматически открыть будильник.\n\nПожалуйста:\n1. Откройте приложение "Часы" или "Будильник" на вашем телефоне\n2. Установите будильник или напоминание на дату:\n${date}\n3. Назовите напоминание: "Как результат?"`;
-            alert(message);
-        }
-
-        // Показать сообщение об успехе
-        function showSuccessMessage() {
-            successMessage.style.display = 'block';
-            setTimeout(() => {
-                successMessage.style.display = 'none';
-            }, 5000);
-        }
-
-        // Обработчик клика по кнопке
-        reminderBtn.addEventListener('click', openAlarmApp);
-
-        // Альтернативный метод - создание события в календаре
-        function createCalendarEvent() {
-            const startDate = new Date();
-            startDate.setDate(startDate.getDate() + 5);
-            const endDate = new Date(startDate.getTime() + 30 * 60 * 1000); // +30 минут
+            instructions.innerHTML = `
+                <strong>Инструкция:</strong><br><br>
+                1. Откройте приложение "Календарь" на вашем устройстве<br>
+                2. Создайте новое событие на дату:<br>
+                <strong>${date}</strong><br>
+                3. Установите название: <strong>"Как результат?"</strong><br>
+                4. Сохраните напоминание
+            `;
             
-            const event = {
-                title: 'Как результат?',
-                start: startDate.toISOString(),
-                end: endDate.toISOString(),
-                description: 'Напоминание установлено через сайт'
-            };
-            
-            // Пробуем создать событие в календаре
-            if (navigator.share) {
-                navigator.share({
-                    title: event.title,
-                    text: event.description,
-                    url: window.location.href
-                }).then(() => {
-                    showSuccessMessage();
-                }).catch(() => {
-                    openAlarmApp(); // Если не получилось, открываем будильник
-                });
-            } else {
-                openAlarmApp();
-            }
+            instructions.style.background = 'rgba(255, 193, 7, 0.1)';
+            instructions.style.padding = '15px';
+            instructions.style.borderRadius = '10px';
+            instructions.style.border = '1px solid rgba(255, 193, 7, 0.3)';
         }
 
-        // Дополнительная кнопка для календаря (опционально)
-        function addCalendarButton() {
-            const calendarBtn = document.createElement('button');
-            calendarBtn.className = 'reminder-btn';
-            calendarBtn.style.background = 'linear-gradient(135deg, #ff4081, #f50057)';
-            calendarBtn.style.marginTop = '10px';
-            calendarBtn.innerHTML = `
+        // Скачать iCal файл (альтернативный метод)
+        function downloadICalFile() {
+            const dateInfo = calculateReminderDate();
+            const startDate = dateInfo.date;
+            const endDate = new Date(startDate.getTime() + 30 * 60 * 1000);
+
+            const icalContent = `BEGIN:VCALENDAR
+VERSION:2.0
+PRODID:-//Reminder App//EN
+BEGIN:VEVENT
+UID:${Date.now()}@reminderapp
+DTSTAMP:${new Date().toISOString().replace(/-|:|\.\d+/g, '')}Z
+DTSTART:${startDate.toISOString().replace(/-|:|\.\d+/g, '')}Z
+DTEND:${endDate.toISOString().replace(/-|:|\.\d+/g, '')}Z
+SUMMARY:Как результат?
+DESCRIPTION:Напоминание установлено через сайт
+END:VEVENT
+END:VCALENDAR`;
+
+            const blob = new Blob([icalContent], { type: 'text/calendar' });
+            const url = window.URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = 'напоминание.ics';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            window.URL.revokeObjectURL(url);
+        }
+
+        // Добавляем альтернативную кнопку для iCal
+        function addICalButton() {
+            const icalBtn = document.createElement('button');
+            icalBtn.className = 'reminder-btn';
+            icalBtn.style.background = 'linear-gradient(135deg, #ff4081, #f50057)';
+            icalBtn.style.marginTop = '10px';
+            icalBtn.innerHTML = `
                 <div class="btn-icon">
-                    <i class="fas fa-calendar-plus"></i>
+                    <i class="fas fa-download"></i>
                 </div>
                 <div class="btn-text">
-                    Добавить в календарь
+                    Скачать файл календаря
                 </div>
             `;
-            calendarBtn.onclick = createCalendarEvent;
+            icalBtn.onclick = downloadICalFile;
             
-            reminderBtn.parentNode.insertBefore(calendarBtn, reminderBtn.nextSibling);
-            
-            // Обновляем инструкцию
-            document.querySelector('.instructions').textContent = 
-                'Выберите способ напоминания: будильник или календарь';
+            reminderBtn.parentNode.insertBefore(icalBtn, reminderBtn.nextSibling);
         }
 
-        // Проверяем поддержку Web Share API и добавляем кнопку календаря если поддерживается
-        if (navigator.share) {
-            addCalendarButton();
-        }
+        // Инициализация
+        updateDateDisplay();
+        addICalButton();
+
+        // Обработчик клика по основной кнопке
+        reminderBtn.addEventListener('click', createCalendarEvent);
+
+        // Обновляем дату каждые 10 секунд
+        setInterval(updateDateDisplay, 10000);
     </script>
 </body>
 </html>
